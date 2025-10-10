@@ -1,0 +1,341 @@
+// frontend/src/pages/AdminDashboard.jsx
+import React, { useState, useEffect } from 'react';
+import { 
+  Truck, 
+  MapPin, 
+  Phone,
+  Mail,
+  CheckCircle,
+  XCircle,
+  Search,
+  Filter,
+  Plus
+} from 'lucide-react';
+
+const AdminDashboard = () => {
+  const [collectors, setCollectors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  useEffect(() => {
+    loadCollectors();
+  }, []);
+
+  const loadCollectors = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      // For now, we'll create mock data since the backend endpoint needs implementation
+      const mockCollectors = [
+        {
+          collector_id: 1,
+          name: 'Paper Collector',
+          email: 'paper@gmail.com',
+          phone: '9876543210',
+          vehicle_number: 'KA01AB1234',
+          is_active: true,
+          created_at: '2025-01-01T10:00:00Z',
+          total_collections: 45,
+          last_collection: '2025-10-09T14:30:00Z'
+        },
+        {
+          collector_id: 2,
+          name: 'Metal Collector',
+          email: 'metal@gmail.com',
+          phone: '9876543211',
+          vehicle_number: 'KA01CD5678',
+          is_active: true,
+          created_at: '2025-01-15T09:00:00Z',
+          total_collections: 32,
+          last_collection: '2025-10-08T16:45:00Z'
+        },
+        {
+          collector_id: 3,
+          name: 'Organic Waste Collector',
+          email: 'organic@gmail.com',
+          phone: '9876543212',
+          vehicle_number: 'KA01EF9012',
+          is_active: false,
+          created_at: '2025-02-01T11:00:00Z',
+          total_collections: 18,
+          last_collection: '2025-09-30T12:00:00Z'
+        }
+      ];
+      setCollectors(mockCollectors);
+    } catch (err) {
+      setError('Failed to load collectors data');
+      console.error('Collectors error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredCollectors = collectors.filter(collector => {
+    const matchesSearch = collector.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         collector.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         collector.vehicle_number?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || 
+                         (statusFilter === 'active' && collector.is_active) ||
+                         (statusFilter === 'inactive' && !collector.is_active);
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  const toggleCollectorStatus = (collectorId) => {
+    setCollectors(prev => prev.map(collector => 
+      collector.collector_id === collectorId 
+        ? { ...collector, is_active: !collector.is_active }
+        : collector
+    ));
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-96">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        {error}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 p-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Collector Management</h1>
+          <p className="text-gray-600">Manage waste collectors and their activities</p>
+        </div>
+        <button className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
+          <Plus size={20} />
+          Add New Collector
+        </button>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total Collectors</p>
+              <p className="text-3xl font-bold text-gray-900">{collectors.length}</p>
+            </div>
+            <div className="p-3 rounded-full bg-blue-500">
+              <Truck size={24} className="text-white" />
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Active Collectors</p>
+              <p className="text-3xl font-bold text-gray-900">
+                {collectors.filter(c => c.is_active).length}
+              </p>
+            </div>
+            <div className="p-3 rounded-full bg-green-500">
+              <CheckCircle size={24} className="text-white" />
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total Collections</p>
+              <p className="text-3xl font-bold text-gray-900">
+                {collectors.reduce((sum, c) => sum + (c.total_collections || 0), 0)}
+              </p>
+            </div>
+            <div className="p-3 rounded-full bg-emerald-500">
+              <MapPin size={24} className="text-white" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Search and Filter */}
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search collectors by name, email, or vehicle number..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Filter size={20} className="text-gray-400" />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            >
+              <option value="all">All Status</option>
+              <option value="active">Active Only</option>
+              <option value="inactive">Inactive Only</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Collectors Table */}
+      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Collectors ({filteredCollectors.length})
+          </h3>
+        </div>
+        
+        {loading ? (
+          <div className="flex justify-center items-center h-32">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+          </div>
+        ) : error ? (
+          <div className="p-6 text-center text-red-600">{error}</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Collector Info
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Contact
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Vehicle
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Collections
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Last Activity
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredCollectors.map((collector) => (
+                  <tr key={collector.collector_id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10">
+                          <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                            <Truck className="h-5 w-5 text-emerald-600" />
+                          </div>
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{collector.name}</div>
+                          <div className="text-sm text-gray-500">ID: {collector.collector_id}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 flex items-center gap-1">
+                        <Mail size={14} className="text-gray-400" />
+                        {collector.email}
+                      </div>
+                      <div className="text-sm text-gray-500 flex items-center gap-1">
+                        <Phone size={14} className="text-gray-400" />
+                        {collector.phone}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{collector.vehicle_number || 'N/A'}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{collector.total_collections || 0}</div>
+                      <div className="text-sm text-gray-500">collections</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {collector.last_collection ? formatDate(collector.last_collection) : 'Never'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        collector.is_active 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {collector.is_active ? (
+                          <>
+                            <CheckCircle size={12} className="mr-1" />
+                            Active
+                          </>
+                        ) : (
+                          <>
+                            <XCircle size={12} className="mr-1" />
+                            Inactive
+                          </>
+                        )}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button
+                        onClick={() => toggleCollectorStatus(collector.collector_id)}
+                        className={`px-3 py-1 rounded text-xs font-medium ${
+                          collector.is_active
+                            ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                            : 'bg-green-100 text-green-700 hover:bg-green-200'
+                        }`}
+                      >
+                        {collector.is_active ? 'Deactivate' : 'Activate'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        
+        {!loading && !error && filteredCollectors.length === 0 && (
+          <div className="text-center py-12">
+            <Truck className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">No collectors found</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              {searchTerm || statusFilter !== 'all' 
+                ? 'Try adjusting your search or filter criteria.'
+                : 'Get started by adding a new collector.'
+              }
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default AdminDashboard;

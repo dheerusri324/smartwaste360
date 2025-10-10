@@ -1,0 +1,60 @@
+/* frontend/src/index.css */
+
+/* 1. Set up Tailwind's core styles. This MUST come first. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 2. Define all your custom styles within their appropriate layers. */
+
+@layer base {
+  /* Global styles for the entire application */
+  body {
+    @apply bg-gray-50 text-gray-800 antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+}
+
+@layer components {
+  /* Reusable Card component class */
+  .card {
+    @apply bg-white p-6 rounded-xl shadow-md;
+  }
+
+  /* Reusable Form component classes */
+  .form-input {
+    @apply block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500;
+  }
+  .form-label {
+    @apply block text-sm font-medium text-gray-700;
+  }
+
+  /* Reusable Button component classes */
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 font-semibold text-base rounded-md shadow-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  .btn-primary {
+    @apply btn bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500 disabled:bg-gray-400;
+  }
+  .btn-secondary {
+    @apply btn bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400;
+  }
+}
+
+@layer utilities {
+  /* Custom keyframe animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 20px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+  
+  .animate-fadeInUp {
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+}

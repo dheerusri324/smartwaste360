@@ -1,0 +1,94 @@
+# Railway Ignore File - Exclude large/unnecessary files
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+Scripts/
+Lib/
+Include/
+pyvenv.cfg
+
+# Node modules
+node_modules/
+frontend/node_modules/
+
+# Build outputs
+frontend/build/
+frontend/dist/
+*.pyc
+__pycache__/
+
+# Development files
+.git/
+.gitignore
+*.log
+logs/
+*.sqlite
+*.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+tests/
+test/
+*.test.js
+*.spec.js
+
+# Documentation
+*.md
+docs/
+
+# Deployment files
+deployment/
+docker-compose.yml
+Dockerfile*
+
+# Large media files
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.zip
+*.tar.gz
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Cache directories
+.cache/
+.npm/
+.yarn/
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Environment files (will be set via Railway variables)
+.env*
+!.env.example
+
+# Large Python packages that will be reinstalled
+site-packages/
+*.whl
+*.egg-info/
+
+# Git files
+.git/
+*.pack
+*.idx
+
+# Large TensorFlow files (using Gemini API instead)
+tensorflow/
+tf*/

@@ -1,0 +1,113 @@
+version: '3.8'
+
+services:
+  # Nginx Load Balancer & SSL Termination
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-prod.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+      - static_files:/var/www/static
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+
+  # Frontend (React)
+  frontend:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile.frontend
+    volumes:
+      - static_files:/usr/share/nginx/html
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # Backend (Flask API)
+  backend:
+    build: 
+      context: ..
+      dockerfile: deployment/Dockerfile.backend
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_URL=postgresql://smartwaste_user:${DB_PASSWORD:-secure_password_123}@db:5432/smartwaste360
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY:9Kav+QSIYrPNr5HzOyHumTLief4bL/tq/hZ9rXrv2qsnOEWChVOXDtn3itAaizUba6KpZ6fUpvgo6PRez8qiBw==}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:yWpOapJ/6SVTxf8SaHukTm2xWkbxSO6/sY+It/T7wJ3OCVUBJfHYHSjT27L3JAaAHo5+WmKCyMX1jsmqprhZaw==}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - uploads:/app/backend/uploads
+      - logs:/app/backend/logs
+    restart: unless-stopped
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=smartwaste360
+      - POSTGRES_USER=smartwaste_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-secure_password_123}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  # Redis Cache & Sessions
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis_password}
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  # Monitoring & Logging
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin123}
+    volumes:
+      - grafana_data:/var/lib/grafana
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads:
+  logs:
+  static_files:
+  prometheus_data:
+  grafana_data:
