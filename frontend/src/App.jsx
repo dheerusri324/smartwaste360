@@ -1,4 +1,5 @@
 // frontend/src/App.jsx
+// SmartWaste360 v1.0.0 - Auto-deployed from GitHub
 import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';

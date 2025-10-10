@@ -60,7 +60,13 @@ app.register_blueprint(health.bp, url_prefix='/health')
 # --- ROOT ROUTE ---
 @app.route('/')
 def home():
-    return jsonify({'message': 'SmartWaste360 API is alive!'})
+    return jsonify({
+        'message': 'SmartWaste360 API is alive!',
+        'version': '1.0.0',
+        'status': 'production',
+        'deployment': 'auto-deployed from GitHub',
+        'timestamp': '2025-10-10'
+    })
 
 # --- RUN THE APP ---
 if __name__ == '__main__':
