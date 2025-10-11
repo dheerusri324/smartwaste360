@@ -26,11 +26,27 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 # --- INITIALIZE EXTENSIONS ---
 
 # 👇 2. INITIALIZE CORS AND ALLOW YOUR REACT APP'S ORIGIN 👇
-CORS(app, origins=[
-    "http://localhost:3000",  # Development
-    "https://smartwaste360-frontend-5eg9cq0zr-121012dheeraj-8860s-projects.vercel.app",  # Vercel deployment
-    "https://*.vercel.app"  # All Vercel deployments
-], supports_credentials=True)
+def is_allowed_origin(origin):
+    """Check if origin is allowed"""
+    allowed_patterns = [
+        "http://localhost:3000",
+        "https://smartwaste360-frontend-",  # Any Vercel deployment starting with this
+    ]
+    
+    if not origin:
+        return False
+        
+    for pattern in allowed_patterns:
+        if origin.startswith(pattern):
+            return True
+    return False
+
+# More flexible CORS setup
+CORS(app, 
+     origins=is_allowed_origin,
+     supports_credentials=True, 
+     allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 jwt = JWTManager(app)
 
