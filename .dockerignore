@@ -1,0 +1,42 @@
+# Exclude frontend directory
+frontend/
+
+# Exclude development files
+.git/
+.gitignore
+*.md
+.env*
+!.env.example
+
+# Exclude virtual environments
+.venv/
+venv/
+env/
+
+# Exclude cache and temporary files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.cache/
+.pytest_cache/
+
+# Exclude IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Exclude OS files
+.DS_Store
+Thumbs.db
+
+# Exclude logs
+*.log
+logs/
+
+# Exclude test files
+tests/
+test/
