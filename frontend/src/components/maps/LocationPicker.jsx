@@ -1,6 +1,6 @@
 // frontend/src/components/maps/LocationPicker.jsx
 
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 

@@ -1,6 +1,6 @@
 // frontend/src/hooks/useCollectorLocation.js
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getCollectorLocation } from '../services/collector';
 
 /**
@@ -78,9 +78,9 @@ export const useCollectorLocation = () => {
   // Load saved location first, then try current location if no saved location
   useEffect(() => {
     loadSavedLocation();
-  }, []);
+  }, [loadSavedLocation]);
 
-  const loadSavedLocation = async () => {
+  const loadSavedLocation = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getCollectorLocation();
@@ -114,7 +114,7 @@ export const useCollectorLocation = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return {
     location,

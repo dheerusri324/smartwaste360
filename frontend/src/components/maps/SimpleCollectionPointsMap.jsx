@@ -1,5 +1,5 @@
 // frontend/src/components/maps/SimpleCollectionPointsMap.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getAllCollectionPoints } from '../../services/collector';
 import { MapPin, Package, Navigation, Clock } from 'lucide-react';
 
@@ -10,9 +10,9 @@ const SimpleCollectionPointsMap = ({ filters = {} }) => {
 
   useEffect(() => {
     loadCollectionPoints();
-  }, [filters]);
+  }, [filters, loadCollectionPoints]);
 
-  const loadCollectionPoints = async () => {
+  const loadCollectionPoints = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -26,7 +26,7 @@ const SimpleCollectionPointsMap = ({ filters = {} }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   const handleGetDirections = (point) => {
     if (point.latitude && point.longitude) {

@@ -8,7 +8,7 @@ import CollectorProfile from '../components/collector/CollectorProfile';
 import CollectionPointsModal from '../components/collector/CollectionPointsModal';
 import CollectionCompletionModal from '../components/collector/CollectionCompletionModal';
 import CollectorStatsWidget from '../components/dashboard/CollectorStatsWidget';
-import { Calendar, PackageSearch, MapPin, User, Settings, Navigation, CheckCircle } from 'lucide-react';
+import { Calendar, PackageSearch, MapPin, Settings, Navigation, CheckCircle } from 'lucide-react';
 import { formatDate } from '../utils/helpers';
 
 const CollectorDashboard = () => {

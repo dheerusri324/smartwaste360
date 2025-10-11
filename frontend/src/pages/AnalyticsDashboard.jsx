@@ -1,6 +1,6 @@
 // frontend/src/pages/AnalyticsDashboard.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { 
   getCollectorPerformance, 
@@ -14,21 +14,16 @@ import {
   TrendingDown,
   Package,
   Clock,
-  MapPin,
   Zap,
-  Award,
   Calendar,
   Scale,
   Recycle,
-  Users,
   Activity
 } from 'lucide-react';
 
 const AnalyticsDashboard = () => {
-  const { user } = useAuth();
   const [summary, setSummary] = useState(null);
   const [performance, setPerformance] = useState(null);
-  const [trends, setTrends] = useState(null);
   const [realtimeData, setRealtimeData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -40,24 +35,22 @@ const AnalyticsDashboard = () => {
     // Set up real-time updates every 30 seconds
     const interval = setInterval(loadRealtimeData, 30000);
     return () => clearInterval(interval);
-  }, [selectedPeriod]);
+  }, [selectedPeriod, loadDashboardData]);
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
       
       // Load all dashboard data in parallel
-      const [summaryData, performanceData, trendsData, realtimeData] = await Promise.all([
+      const [summaryData, performanceData, realtimeData] = await Promise.all([
         getCollectorSummary(),
         getCollectorPerformance(selectedPeriod),
-        getWasteTrends(90),
         getRealtimeDashboard()
       ]);
       
       setSummary(summaryData.data);
       setPerformance(performanceData.data);
-      setTrends(trendsData.data);
       setRealtimeData(realtimeData.data);
       
     } catch (err) {
@@ -65,7 +58,7 @@ const AnalyticsDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedPeriod]);
 
   const loadRealtimeData = async () => {
     try {
