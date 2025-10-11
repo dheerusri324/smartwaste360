@@ -1,8 +1,7 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "NIXPACKS",
-    "buildCommand": "pip install -r requirements.txt"
+    "builder": "NIXPACKS"
   },
   "deploy": {
     "startCommand": "gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 app:app",
@@ -15,8 +14,7 @@
     "production": {
       "variables": {
         "FLASK_ENV": "production",
-        "PYTHONPATH": "/app",
-        "NIXPACKS_PYTHON_VERSION": "3.11"
+        "PYTHONPATH": "/app"
       }
     }
   }
