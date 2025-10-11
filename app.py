@@ -26,7 +26,11 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 # --- INITIALIZE EXTENSIONS ---
 
 # 👇 2. INITIALIZE CORS AND ALLOW YOUR REACT APP'S ORIGIN 👇
-CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
+CORS(app, origins=[
+    "http://localhost:3000",  # Development
+    "https://smartwaste360-frontend-5eg9cq0zr-121012dheeraj-8860s-projects.vercel.app",  # Vercel deployment
+    "https://*.vercel.app"  # All Vercel deployments
+], supports_credentials=True)
 
 jwt = JWTManager(app)
 
