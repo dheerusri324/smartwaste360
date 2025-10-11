@@ -10,13 +10,11 @@ Lib/
 Include/
 pyvenv.cfg
 
+# Exclude entire frontend directory - this is deployed separately on Vercel
+frontend/
+
 # Node modules
 node_modules/
-frontend/node_modules/
-
-# Build outputs
-frontend/build/
-frontend/dist/
 *.pyc
 __pycache__/
 
