@@ -67,11 +67,12 @@ app.register_blueprint(health.bp, url_prefix='/health')
 def home():
     return jsonify({
         'message': 'SmartWaste360 API is alive!',
-        'version': '1.0.1',
+        'version': '2.0.0',
         'status': 'production',
-        'deployment': 'auto-deployed from GitHub',
+        'deployment': 'simplified-nixpacks-config',
         'timestamp': '2025-10-11',
-        'cors_enabled': True
+        'cors_enabled': True,
+        'cors_config': 'allow_all_origins'
     })
 
 @app.route('/health')
