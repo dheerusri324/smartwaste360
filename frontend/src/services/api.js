@@ -1,11 +1,18 @@
 // frontend/src/services/api.js
 
 import axios from 'axios';
+import config from '../config/config.js';
 
-// The base URL of your running Flask backend
-const API_BASE_URL = process.env.REACT_APP_API_URL 
-  ? `${process.env.REACT_APP_API_URL}/api`
-  : 'https://smartwaste360backend-production.up.railway.app/api';
+// Use the centralized configuration
+const API_BASE_URL = config.API_BASE_URL;
+
+// Debug logging
+console.log('🔧 API Configuration:', {
+  API_BASE_URL: API_BASE_URL,
+  config: config,
+  env_REACT_APP_API_URL: process.env.REACT_APP_API_URL,
+  NODE_ENV: process.env.NODE_ENV
+});
 
 const api = axios.create({
   baseURL: API_BASE_URL,
