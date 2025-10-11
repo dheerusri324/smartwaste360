@@ -78,8 +78,9 @@ def home():
 def health():
     return jsonify({
         'status': 'healthy',
-        'cors_origins': 'dynamic_checking_enabled',
-        'timestamp': '2025-10-11'
+        'cors_origins': 'all_origins_allowed',
+        'timestamp': '2025-10-11',
+        'version': '1.0.2'
     })
 
 # --- RUN THE APP ---
