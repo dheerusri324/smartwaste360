@@ -111,7 +111,7 @@ const Maps = () => {
     } finally {
       setLoadingColonies(false);
     }
-  }, [userLocation, effectiveLocation, isCollector, collectorLocation.locationMethod]);
+  }, [userLocation, effectiveLocation, isCollector]);
 
   useEffect(() => {
     fetchMapData();

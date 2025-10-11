@@ -1,7 +1,6 @@
 // frontend/src/pages/CollectorSettings.jsx
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { getCollectorProfile, updateCollectorProfile } from '../services/collector';
 import { MapPin, Save, Navigation, Globe, User, Truck } from 'lucide-react';
 

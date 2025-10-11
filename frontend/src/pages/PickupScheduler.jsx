@@ -1,7 +1,6 @@
 // frontend/src/pages/PickupScheduler.jsx
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { 
   getRouteOptimizationSuggestions, 
   getAvailableTimeSlots, 
@@ -12,7 +11,6 @@ import {
   Clock, 
   Map, 
   Calendar, 
-  Truck, 
   Package, 
   Navigation,
   CheckCircle,
@@ -21,7 +19,6 @@ import {
 } from 'lucide-react';
 
 const PickupScheduler = () => {
-  const { user } = useAuth();
   const [routeSuggestions, setRouteSuggestions] = useState([]);
   const [selectedRoute, setSelectedRoute] = useState(null);
   const [selectedDate, setSelectedDate] = useState('');
@@ -46,6 +43,15 @@ const PickupScheduler = () => {
 
   // Load time slots when date changes
   useEffect(() => {
+    const loadTimeSlots = async () => {
+      try {
+        const response = await getAvailableTimeSlots(selectedDate);
+        setAvailableTimeSlots(response.time_slots || []);
+      } catch (err) {
+        console.error('Failed to load time slots:', err);
+      }
+    };
+
     if (selectedDate) {
       loadTimeSlots();
     }
@@ -74,14 +80,7 @@ const PickupScheduler = () => {
     }
   };
 
-  const loadTimeSlots = async () => {
-    try {
-      const response = await getAvailableTimeSlots(selectedDate);
-      setAvailableTimeSlots(response.time_slots || []);
-    } catch (err) {
-      console.error('Failed to load time slots:', err);
-    }
-  };
+
 
   const handleScheduleRoute = async () => {
     if (!selectedRoute || !selectedDate || !selectedTimeSlot) {

@@ -41,11 +41,12 @@ const CollectorDashboard = () => {
       setReadyColonies(readyColoniesData.colonies || []);
       setCollector(profileData.collector || null);
     } catch (err) {
+      console.error('Dashboard data error:', err);
       setError('Failed to load dashboard data. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, []); // useCallback dependencies can be empty if it doesn't depend on props/state
+  }, [schedule.length, readyColonies.length]);
 
   useEffect(() => {
     loadDashboardData();
