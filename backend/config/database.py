@@ -13,20 +13,28 @@ dotenv_path = project_root / '.env'
 if dotenv_path.exists():
     load_dotenv(dotenv_path)
 
-# Database configuration
-DB_CONFIG = {
-    'host': os.getenv('DB_HOST', 'localhost'),
-    'user': os.getenv('DB_USER', 'postgres'),
-    'password': os.getenv('DB_PASSWORD', 'dheerusri'),
-    'database': os.getenv('DB_NAME', 'smartwaste360'),
-    'port': os.getenv('DB_PORT', '5432')
-}
+# Database configuration - support both DATABASE_URL and individual variables
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+if DATABASE_URL:
+    # Use Railway's DATABASE_URL if available
+    connection_string = DATABASE_URL
+    print(f"[INFO] Using DATABASE_URL for connection")
+else:
+    # Fallback to individual environment variables for local development
+    DB_CONFIG = {
+        'host': os.getenv('DB_HOST', 'localhost'),
+        'user': os.getenv('DB_USER', 'postgres'),
+        'password': os.getenv('DB_PASSWORD', 'dheerusri'),
+        'database': os.getenv('DB_NAME', 'smartwaste360'),
+        'port': os.getenv('DB_PORT', '5432')
+    }
+    connection_string = f"postgresql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['database']}"
+    print(f"[INFO] Using individual DB config for connection")
 
 def create_connection_pool():
     """Initializes the connection pool."""
     try:
-        connection_string = f"postgresql://{DB_CONFIG['user']}:{DB_CONFIG['password']}@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['database']}"
-        
         connection_pool = psycopg2.pool.SimpleConnectionPool(1, 20, connection_string)
         
         # Test the connection
