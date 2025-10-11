@@ -26,10 +26,15 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 # --- INITIALIZE EXTENSIONS ---
 
 # 👇 2. INITIALIZE CORS AND ALLOW YOUR REACT APP'S ORIGIN 👇
-# Simplified CORS setup for immediate fix
+# Explicit CORS setup for Vercel domains
 CORS(app, 
-     origins=["*"],  # Allow all origins temporarily for debugging
-     supports_credentials=False,  # Must be False when using "*"
+     origins=[
+         "https://smartwaste360-frontend-dvmej32jt-121012dheeraj-8860s-projects.vercel.app",
+         "https://smartwaste360-frontend-5eg9cq0zr-121012dheeraj-8860s-projects.vercel.app", 
+         "https://smartwaste360-frontend.vercel.app",
+         "http://localhost:3000"
+     ],
+     supports_credentials=True,
      allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
