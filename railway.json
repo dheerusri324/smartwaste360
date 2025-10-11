@@ -14,7 +14,9 @@
     "production": {
       "variables": {
         "FLASK_ENV": "production",
-        "PYTHONPATH": "/app"
+        "PYTHONPATH": "/app",
+        "NIXPACKS_PYTHON_VERSION": "3.11",
+        "DISABLE_COLLECTSTATIC": "1"
       }
     }
   }
