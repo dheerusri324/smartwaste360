@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "smartwaste360-frontend",
   "builds": [
     {
       "src": "frontend/package.json",
@@ -12,33 +11,8 @@
   ],
   "routes": [
     {
-      "src": "/static/(.*)",
-      "headers": {
-        "cache-control": "s-maxage=31536000,immutable"
-      },
-      "dest": "/static/$1"
-    },
-    {
-      "src": "/manifest.json",
-      "dest": "/manifest.json"
-    },
-    {
-      "src": "/favicon.ico",
-      "dest": "/favicon.ico"
-    },
-    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-  "env": {
-    "REACT_APP_API_URL": "https://smartwaste360backend-production.up.railway.app",
-    "REACT_APP_ENVIRONMENT": "production"
-  },
-  "build": {
-    "env": {
-      "REACT_APP_API_URL": "https://smartwaste360backend-production.up.railway.app",
-      "REACT_APP_ENVIRONMENT": "production"
-    }
-  }
+  ]
 }
