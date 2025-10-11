@@ -27,5 +27,6 @@ console.log('🔧 Environment Variables:', {
 
 // Force alert to confirm new build is loaded
 console.warn('🚀 NEW BUILD LOADED - API should use Railway, not localhost!');
+alert('NEW BUILD LOADED! Check console for API config.');
 
 export default config;
