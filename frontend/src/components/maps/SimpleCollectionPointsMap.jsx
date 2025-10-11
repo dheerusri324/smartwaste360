@@ -8,10 +8,6 @@ const SimpleCollectionPointsMap = ({ filters = {} }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    loadCollectionPoints();
-  }, [filters, loadCollectionPoints]);
-
   const loadCollectionPoints = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -27,6 +23,10 @@ const SimpleCollectionPointsMap = ({ filters = {} }) => {
       setLoading(false);
     }
   }, [filters]);
+
+  useEffect(() => {
+    loadCollectionPoints();
+  }, [loadCollectionPoints]);
 
   const handleGetDirections = (point) => {
     if (point.latitude && point.longitude) {

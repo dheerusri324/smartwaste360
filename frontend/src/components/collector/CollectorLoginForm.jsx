@@ -1,7 +1,7 @@
 // frontend/src/components/collector/CollectorLoginForm.jsx
 
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const CollectorLoginForm = () => {
@@ -10,7 +10,7 @@ const CollectorLoginForm = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   
-  const navigate = useNavigate();
+
   const { collectorLoginAction } = useAuth(); // Use the specific collector login action from the context
 
   const handleSubmit = async (e) => {

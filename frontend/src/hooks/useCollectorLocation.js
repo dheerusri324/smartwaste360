@@ -75,11 +75,6 @@ export const useCollectorLocation = () => {
     console.log('Collector viewing all colonies');
   };
 
-  // Load saved location first, then try current location if no saved location
-  useEffect(() => {
-    loadSavedLocation();
-  }, [loadSavedLocation]);
-
   const loadSavedLocation = useCallback(async () => {
     try {
       setLoading(true);
@@ -115,6 +110,11 @@ export const useCollectorLocation = () => {
       setLoading(false);
     }
   }, []);
+
+  // Load saved location first, then try current location if no saved location
+  useEffect(() => {
+    loadSavedLocation();
+  }, [loadSavedLocation]);
 
   return {
     location,

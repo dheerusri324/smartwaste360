@@ -1,11 +1,9 @@
 // frontend/src/pages/AnalyticsDashboard.jsx
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { 
   getCollectorPerformance, 
-  getCollectorSummary, 
-  getWasteTrends,
+  getCollectorSummary,
   getRealtimeDashboard 
 } from '../services/analytics';
 import {
@@ -29,14 +27,6 @@ const AnalyticsDashboard = () => {
   const [error, setError] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState(30);
 
-  useEffect(() => {
-    loadDashboardData();
-    
-    // Set up real-time updates every 30 seconds
-    const interval = setInterval(loadRealtimeData, 30000);
-    return () => clearInterval(interval);
-  }, [selectedPeriod, loadDashboardData]);
-
   const loadDashboardData = useCallback(async () => {
     try {
       setLoading(true);
@@ -59,6 +49,14 @@ const AnalyticsDashboard = () => {
       setLoading(false);
     }
   }, [selectedPeriod]);
+
+  useEffect(() => {
+    loadDashboardData();
+    
+    // Set up real-time updates every 30 seconds
+    const interval = setInterval(loadRealtimeData, 30000);
+    return () => clearInterval(interval);
+  }, [loadDashboardData]);
 
   const loadRealtimeData = async () => {
     try {
