@@ -33,12 +33,18 @@ def is_allowed_origin(origin):
         "https://smartwaste360-frontend-",  # Any Vercel deployment starting with this
     ]
     
+    print(f"[CORS] Checking origin: {origin}")
+    
     if not origin:
+        print("[CORS] No origin provided")
         return False
         
     for pattern in allowed_patterns:
         if origin.startswith(pattern):
+            print(f"[CORS] Origin {origin} allowed by pattern {pattern}")
             return True
+    
+    print(f"[CORS] Origin {origin} not allowed")
     return False
 
 # More flexible CORS setup
@@ -82,10 +88,19 @@ app.register_blueprint(health.bp, url_prefix='/health')
 def home():
     return jsonify({
         'message': 'SmartWaste360 API is alive!',
-        'version': '1.0.0',
+        'version': '1.0.1',
         'status': 'production',
         'deployment': 'auto-deployed from GitHub',
-        'timestamp': '2025-10-10'
+        'timestamp': '2025-10-11',
+        'cors_enabled': True
+    })
+
+@app.route('/health')
+def health():
+    return jsonify({
+        'status': 'healthy',
+        'cors_origins': 'dynamic_checking_enabled',
+        'timestamp': '2025-10-11'
     })
 
 # --- RUN THE APP ---
