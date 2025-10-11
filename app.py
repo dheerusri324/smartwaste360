@@ -26,31 +26,10 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 # --- INITIALIZE EXTENSIONS ---
 
 # 👇 2. INITIALIZE CORS AND ALLOW YOUR REACT APP'S ORIGIN 👇
-def is_allowed_origin(origin):
-    """Check if origin is allowed"""
-    allowed_patterns = [
-        "http://localhost:3000",
-        "https://smartwaste360-frontend-",  # Any Vercel deployment starting with this
-    ]
-    
-    print(f"[CORS] Checking origin: {origin}")
-    
-    if not origin:
-        print("[CORS] No origin provided")
-        return False
-        
-    for pattern in allowed_patterns:
-        if origin.startswith(pattern):
-            print(f"[CORS] Origin {origin} allowed by pattern {pattern}")
-            return True
-    
-    print(f"[CORS] Origin {origin} not allowed")
-    return False
-
-# More flexible CORS setup
+# Simplified CORS setup for immediate fix
 CORS(app, 
-     origins=is_allowed_origin,
-     supports_credentials=True, 
+     origins=["*"],  # Allow all origins temporarily for debugging
+     supports_credentials=False,  # Must be False when using "*"
      allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
