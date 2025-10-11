@@ -1,5 +1,5 @@
 // frontend/src/components/collector/CollectionPointsModal.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getCollectionPoints } from '../../services/collector';
 import { MapPin, Package, X, Navigation } from 'lucide-react';
 
@@ -8,13 +8,7 @@ const CollectionPointsModal = ({ colony, isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (isOpen && colony) {
-      loadCollectionPoints();
-    }
-  }, [isOpen, colony]);
-
-  const loadCollectionPoints = async () => {
+  const loadCollectionPoints = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -25,7 +19,13 @@ const CollectionPointsModal = ({ colony, isOpen, onClose }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [colony]);
+
+  useEffect(() => {
+    if (isOpen && colony) {
+      loadCollectionPoints();
+    }
+  }, [isOpen, colony, loadCollectionPoints]);
 
   const getDirections = (point) => {
     if (point.latitude && point.longitude) {
