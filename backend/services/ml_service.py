@@ -17,7 +17,9 @@ class MLService:
 
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            raise ValueError("GEMINI_API_KEY not found in .env file.")
+            print("WARNING: GEMINI_API_KEY not found. ML features will be disabled.")
+            self.model = None
+            return
         
         genai.configure(api_key=api_key)
 
@@ -39,6 +41,16 @@ class MLService:
         Classifies waste by sending an image and a prompt to the Gemini API.
         Falls back to a default classification if API fails.
         """
+        # If model is not available, return default classification
+        if not self.model:
+            return {
+                'predicted_class': waste_type or 'plastic',
+                'confidence': 0.5,
+                'is_recyclable': True,
+                'estimated_value': float(weight) * 0.1 if weight else 0.0,
+                'method': 'fallback'
+            }
+            
         try:
             img = Image.open(image_path)
             prompt = f"""
