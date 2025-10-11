@@ -26,5 +26,11 @@
   "env": {
     "REACT_APP_API_URL": "https://smartwaste360backend-production.up.railway.app",
     "REACT_APP_ENVIRONMENT": "production"
+  },
+  "build": {
+    "env": {
+      "REACT_APP_API_URL": "https://smartwaste360backend-production.up.railway.app",
+      "REACT_APP_ENVIRONMENT": "production"
+    }
   }
 }
