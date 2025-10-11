@@ -18,11 +18,14 @@ const config = {
 };
 
 // Always log configuration to debug the issue
-console.log('🔧 App Configuration:', config);
+console.log('🔧 App Configuration (v2.0.1):', config);
 console.log('🔧 Environment Variables:', {
   REACT_APP_API_URL: process.env.REACT_APP_API_URL,
   REACT_APP_ENVIRONMENT: process.env.REACT_APP_ENVIRONMENT,
   NODE_ENV: process.env.NODE_ENV,
 });
+
+// Force alert to confirm new build is loaded
+console.warn('🚀 NEW BUILD LOADED - API should use Railway, not localhost!');
 
 export default config;
