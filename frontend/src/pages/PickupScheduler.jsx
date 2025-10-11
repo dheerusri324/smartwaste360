@@ -1,6 +1,6 @@
 // frontend/src/pages/PickupScheduler.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   getRouteOptimizationSuggestions, 
   getAvailableTimeSlots, 
@@ -41,21 +41,21 @@ const PickupScheduler = () => {
     loadRouteSuggestions();
   }, []);
 
+  const loadTimeSlots = useCallback(async () => {
+    try {
+      const response = await getAvailableTimeSlots(selectedDate);
+      setAvailableTimeSlots(response.time_slots || []);
+    } catch (err) {
+      console.error('Failed to load time slots:', err);
+    }
+  }, [selectedDate]);
+
   // Load time slots when date changes
   useEffect(() => {
-    const loadTimeSlots = async () => {
-      try {
-        const response = await getAvailableTimeSlots(selectedDate);
-        setAvailableTimeSlots(response.time_slots || []);
-      } catch (err) {
-        console.error('Failed to load time slots:', err);
-      }
-    };
-
     if (selectedDate) {
       loadTimeSlots();
     }
-  }, [selectedDate]);
+  }, [selectedDate, loadTimeSlots]);
 
   const loadRouteSuggestions = async () => {
     try {
