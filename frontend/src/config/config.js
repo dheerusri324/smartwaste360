@@ -11,6 +11,10 @@ const config = {
   
   // Debug mode - always show config for now to debug
   DEBUG: true,
+  
+  // Force cache bust
+  VERSION: '2.0.1',
+  UPDATED: '2025-10-11'
 };
 
 // Always log configuration to debug the issue
