@@ -100,6 +100,61 @@ def mobile_debug():
         'backend_url': 'https://smartwaste360-backend.onrender.com'
     })
 
+@app.route('/create-test-user')
+def create_test_user():
+    """Create a test user for mobile testing"""
+    try:
+        import psycopg2
+        import bcrypt
+        
+        # Get database URL from environment
+        database_url = os.getenv('DATABASE_URL')
+        if not database_url:
+            return jsonify({'error': 'DATABASE_URL not found'}), 500
+        
+        # Connect to database
+        conn = psycopg2.connect(database_url)
+        cursor = conn.cursor()
+        
+        # Create test user
+        test_email = "test@smartwaste360.com"
+        test_password = "test123"
+        test_username = "testuser"
+        
+        # Hash password
+        password_hash = bcrypt.hashpw(test_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
+        # Insert test user (ignore if exists)
+        cursor.execute("""
+            INSERT INTO users (username, email, password_hash, full_name, total_points)
+            VALUES (%s, %s, %s, %s, %s)
+            ON CONFLICT (email) DO NOTHING
+            RETURNING user_id;
+        """, (test_username, test_email, password_hash, "Test User", 100))
+        
+        result = cursor.fetchone()
+        conn.commit()
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'message': 'Test user created/verified successfully!',
+            'credentials': {
+                'email': test_email,
+                'password': test_password,
+                'username': test_username
+            },
+            'user_created': result is not None,
+            'status': 'success'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'error': f'Test user creation failed: {str(e)}',
+            'status': 'failed'
+        }), 500
+
 @app.route('/add-missing-tables')
 def add_missing_tables():
     """Add missing achievement and admin activity tables"""
