@@ -17,8 +17,8 @@ def create_admin_and_test():
     print("👤 Creating admin user...")
     register_response = requests.post(f"{BASE_URL}/auth/register", json={
         "username": "admin",
-        "email": "admin@smartwaste360.com",
-        "password": "admin123",
+        "email": "admin@gmail.com",
+        "password": "admin",
         "full_name": "System Administrator",
         "role": "admin"
     })
@@ -29,8 +29,8 @@ def create_admin_and_test():
     # Step 2: Login as admin
     print("\n🔐 Logging in as admin...")
     login_response = requests.post(f"{BASE_URL}/auth/login", json={
-        "identifier": "admin@smartwaste360.com",
-        "password": "admin123"
+        "identifier": "admina@gmail.com",
+        "password": "admin"
     })
     
     print(f"Login Status: {login_response.status_code}")
