@@ -122,6 +122,16 @@ def debug_headers():
         'content_type': request.headers.get('Content-Type', 'Not set')
     })
 
+@app.route('/test-collector-update/<collector_id>')
+def test_collector_update(collector_id):
+    """Test endpoint to verify route parameters are working"""
+    return jsonify({
+        'status': 'test_success',
+        'message': 'Route parameters are working!',
+        'collector_id_received': collector_id,
+        'version': '5.4.0'
+    })
+
 @app.route('/create-test-user')
 def create_test_user():
     """Create a test user for mobile testing"""
