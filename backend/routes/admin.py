@@ -127,7 +127,7 @@ def get_all_users():
 
 @bp.route('/users/<int:user_id>/status', methods=['PUT'])
 @jwt_required()
-def update_user_status():
+def update_user_status(user_id):
     """Update user active status"""
     try:
         claims = get_jwt()
@@ -171,7 +171,7 @@ def get_all_collectors():
 
 @bp.route('/collectors/<collector_id>/status', methods=['PUT'])
 @jwt_required()
-def update_collector_status():
+def update_collector_status(collector_id):
     """Update collector active status"""
     try:
         claims = get_jwt()
@@ -199,7 +199,7 @@ def update_collector_status():
 
 @bp.route('/collectors/<collector_id>', methods=['PUT'])
 @jwt_required()
-def update_collector():
+def update_collector(collector_id):
     """Update collector information"""
     try:
         claims = get_jwt()
