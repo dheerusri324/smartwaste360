@@ -84,6 +84,22 @@ def health():
         'version': '5.0.0'
     })
 
+@app.route('/mobile-debug')
+def mobile_debug():
+    """Debug endpoint for mobile connectivity issues"""
+    from flask import request
+    return jsonify({
+        'status': 'mobile_debug_success',
+        'message': 'If you see this, DNS resolution is working!',
+        'server': 'render',
+        'timestamp': '2025-10-12',
+        'client_ip': request.remote_addr,
+        'user_agent': request.headers.get('User-Agent', 'Unknown'),
+        'origin': request.headers.get('Origin', 'No Origin'),
+        'cors_enabled': True,
+        'backend_url': 'https://smartwaste360-backend.onrender.com'
+    })
+
 @app.route('/add-missing-tables')
 def add_missing_tables():
     """Add missing achievement and admin activity tables"""

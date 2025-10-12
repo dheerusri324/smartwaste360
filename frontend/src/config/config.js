@@ -35,7 +35,7 @@ console.log('📱 Device Info:', {
 });
 
 // Force alert to confirm new build is loaded
-console.warn('🚀 NEW BUILD LOADED - API should use Railway, not localhost!');
+console.warn('🚀 NEW BUILD LOADED - API should use Render, not localhost!');
 if (isMobile) {
   alert('MOBILE BUILD LOADED! API: ' + config.API_BASE_URL);
 }

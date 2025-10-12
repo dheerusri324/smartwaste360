@@ -51,7 +51,7 @@ def test_cors():
         response = requests.options(
             "https://smartwaste360-backend.onrender.com/api/auth/login",
             headers={
-                'Origin': 'https://smartwaste360-frontend-b9jirihyv-121012dheeraj-8860s-projects.vercel.app',
+                'Origin': 'https://smartwaste360-frontend.vercel.app',
                 'Access-Control-Request-Method': 'POST',
                 'Access-Control-Request-Headers': 'Content-Type'
             },
@@ -72,7 +72,7 @@ def main():
     print("\n" + "=" * 50)
     print("📋 Summary:")
     print("   Backend URL: https://smartwaste360-backend.onrender.com")
-    print("   Frontend URL: https://smartwaste360-frontend-b9jirihyv-121012dheeraj-8860s-projects.vercel.app")
+    print("   Frontend URL: https://smartwaste360-frontend.vercel.app")
     print("   API Base: https://smartwaste360-backend.onrender.com/api")
 
 if __name__ == "__main__":
