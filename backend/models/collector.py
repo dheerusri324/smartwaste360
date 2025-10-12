@@ -146,3 +146,54 @@ class Collector:
             with db.cursor(cursor_factory=RealDictCursor) as cursor:
                 cursor.execute(sql, (limit,))
                 return cursor.fetchall()
+
+    @staticmethod
+    def get_all_collectors():
+        """Get all collectors for admin management"""
+        sql = """
+            SELECT collector_id, name, phone, email, assigned_colonies, 
+                   vehicle_number, is_active, created_at
+            FROM collectors
+            ORDER BY created_at DESC
+        """
+        with get_db() as db:
+            if not db: raise ConnectionError("Database connection not available.")
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute(sql)
+                return cursor.fetchall()
+
+    @staticmethod
+    def update_status(collector_id, is_active):
+        """Update collector active status"""
+        sql = "UPDATE collectors SET is_active = %s WHERE collector_id = %s"
+        with get_db() as db:
+            if not db: raise ConnectionError("Database connection not available.")
+            with db.cursor() as cursor:
+                cursor.execute(sql, (is_active, collector_id))
+                db.commit()
+                return cursor.rowcount > 0
+
+    @staticmethod
+    def update_collector(collector_id, data):
+        """Update collector information"""
+        allowed_fields = ['name', 'phone', 'email', 'assigned_colonies', 'vehicle_number']
+        updates = []
+        params = []
+        
+        for field, value in data.items():
+            if field in allowed_fields and value is not None:
+                updates.append(f"{field} = %s")
+                params.append(value)
+        
+        if not updates:
+            return True  # No updates needed
+            
+        params.append(collector_id)
+        sql = f"UPDATE collectors SET {', '.join(updates)} WHERE collector_id = %s"
+        
+        with get_db() as db:
+            if not db: raise ConnectionError("Database connection not available.")
+            with db.cursor() as cursor:
+                cursor.execute(sql, params)
+                db.commit()
+                return cursor.rowcount > 0

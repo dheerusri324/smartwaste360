@@ -118,14 +118,36 @@ def get_all_users():
         if claims.get('role') != 'admin':
             return jsonify({"msg": "Access denied: Admin access required"}), 403
 
-        page = request.args.get('page', 1, type=int)
-        limit = request.args.get('limit', 20, type=int)
-        search = request.args.get('search', '')
+        users = User.get_all_users()
+        return jsonify({'users': users}), 200
 
-        # This would need to be implemented in User model
-        # users_data = User.get_all_paginated(page, limit, search)
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': 'An internal server error occurred'}), 500
+
+@bp.route('/users/<int:user_id>/status', methods=['PUT'])
+@jwt_required()
+def update_user_status():
+    """Update user active status"""
+    try:
+        claims = get_jwt()
+        if claims.get('role') != 'admin':
+            return jsonify({"msg": "Access denied: Admin access required"}), 403
+
+        data = request.get_json()
+        is_active = data.get('is_active')
         
-        return jsonify({'message': 'User management endpoint - to be implemented'}), 200
+        if is_active is None:
+            return jsonify({'error': 'is_active field is required'}), 400
+
+        success = User.update_status(user_id, is_active)
+        
+        if success:
+            return jsonify({
+                'message': f'User {"activated" if is_active else "deactivated"} successfully'
+            }), 200
+        else:
+            return jsonify({'error': 'User not found'}), 404
 
     except Exception as e:
         traceback.print_exc()
@@ -140,8 +162,59 @@ def get_all_collectors():
         if claims.get('role') != 'admin':
             return jsonify({"msg": "Access denied: Admin access required"}), 403
 
-        # This would need to be implemented in Collector model
-        return jsonify({'message': 'Collector management endpoint - to be implemented'}), 200
+        collectors = Collector.get_all_collectors()
+        return jsonify({'collectors': collectors}), 200
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': 'An internal server error occurred'}), 500
+
+@bp.route('/collectors/<collector_id>/status', methods=['PUT'])
+@jwt_required()
+def update_collector_status():
+    """Update collector active status"""
+    try:
+        claims = get_jwt()
+        if claims.get('role') != 'admin':
+            return jsonify({"msg": "Access denied: Admin access required"}), 403
+
+        data = request.get_json()
+        is_active = data.get('is_active')
+        
+        if is_active is None:
+            return jsonify({'error': 'is_active field is required'}), 400
+
+        success = Collector.update_status(collector_id, is_active)
+        
+        if success:
+            return jsonify({
+                'message': f'Collector {"activated" if is_active else "deactivated"} successfully'
+            }), 200
+        else:
+            return jsonify({'error': 'Collector not found'}), 404
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': 'An internal server error occurred'}), 500
+
+@bp.route('/collectors/<collector_id>', methods=['PUT'])
+@jwt_required()
+def update_collector():
+    """Update collector information"""
+    try:
+        claims = get_jwt()
+        if claims.get('role') != 'admin':
+            return jsonify({"msg": "Access denied: Admin access required"}), 403
+
+        data = request.get_json()
+        
+        # Update collector
+        success = Collector.update_collector(collector_id, data)
+        
+        if success:
+            return jsonify({'message': 'Collector updated successfully'}), 200
+        else:
+            return jsonify({'error': 'Collector not found'}), 404
 
     except Exception as e:
         traceback.print_exc()

@@ -107,3 +107,31 @@ class User:
             with db.cursor() as cursor:
                 cursor.execute(sql, (password_hash, user_id))
                 db.commit()
+
+    @staticmethod
+    def get_all_users():
+        """Get all users for admin management"""
+        sql = """
+            SELECT u.user_id, u.username, u.email, u.full_name, u.phone, 
+                   u.total_points, u.total_weight_recycled, u.is_active, 
+                   u.created_at, u.last_login, c.colony_name
+            FROM users u
+            LEFT JOIN colonies c ON u.colony_id = c.colony_id
+            ORDER BY u.created_at DESC
+        """
+        with get_db() as db:
+            if not db: raise ConnectionError("Database connection not available.")
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute(sql)
+                return cursor.fetchall()
+
+    @staticmethod
+    def update_status(user_id, is_active):
+        """Update user active status"""
+        sql = "UPDATE users SET is_active = %s WHERE user_id = %s"
+        with get_db() as db:
+            if not db: raise ConnectionError("Database connection not available.")
+            with db.cursor() as cursor:
+                cursor.execute(sql, (is_active, user_id))
+                db.commit()
+                return cursor.rowcount > 0
