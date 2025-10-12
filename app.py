@@ -90,4 +90,5 @@ def health():
 
 # --- RUN THE APP ---
 if __name__ == '__main__':
+    print("🚀 STARTING SMARTWASTE360 API v4.0.0 WITH CORS FIX")
     app.run(debug=True, host='0.0.0.0', port=5000)

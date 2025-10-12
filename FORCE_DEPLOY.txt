@@ -1,0 +1,4 @@
+Force Railway deployment
+Timestamp: 2025-10-12 05:06:00
+Issue: Railway not deploying latest CORS fixes
+Expected: API should return "CORS FIXED" message
