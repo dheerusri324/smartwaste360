@@ -80,9 +80,60 @@ def health():
     return jsonify({
         'status': 'healthy',
         'cors_origins': 'all_origins_allowed',
-        'timestamp': '2025-10-11',
-        'version': '1.0.2'
+        'timestamp': '2025-10-12',
+        'version': '5.0.0'
     })
+
+@app.route('/setup-database')
+def setup_database():
+    """Setup database tables - run this once after deployment"""
+    try:
+        import psycopg2
+        from pathlib import Path
+        
+        # Get database URL from environment
+        database_url = os.getenv('DATABASE_URL')
+        if not database_url:
+            return jsonify({'error': 'DATABASE_URL not found'}), 500
+        
+        # Connect to database
+        conn = psycopg2.connect(database_url)
+        cursor = conn.cursor()
+        
+        # Read the SQL migration file
+        sql_file = Path(__file__).parent / 'database' / 'migrations' / '001_initial_schema.sql'
+        
+        with open(sql_file, 'r') as f:
+            sql_content = f.read()
+        
+        # Execute the SQL
+        cursor.execute(sql_content)
+        conn.commit()
+        
+        # Verify tables were created
+        cursor.execute("""
+            SELECT table_name FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            ORDER BY table_name;
+        """)
+        
+        tables = cursor.fetchall()
+        table_names = [table[0] for table in tables]
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'message': 'Database tables created successfully!',
+            'tables_created': table_names,
+            'status': 'success'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'error': f'Failed to create tables: {str(e)}',
+            'status': 'failed'
+        }), 500
 
 # --- RUN THE APP ---
 if __name__ == '__main__':
