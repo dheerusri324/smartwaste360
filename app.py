@@ -29,9 +29,9 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 # Explicit CORS setup for Vercel domains
 CORS(app, 
      origins=[
+         "https://smartwaste360-frontend.vercel.app",
          "https://smartwaste360-frontend-dvmej32jt-121012dheeraj-8860s-projects.vercel.app",
          "https://smartwaste360-frontend-5eg9cq0zr-121012dheeraj-8860s-projects.vercel.app", 
-         "https://smartwaste360-frontend.vercel.app",
          "http://localhost:3000"
      ],
      supports_credentials=True,
