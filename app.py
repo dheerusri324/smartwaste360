@@ -448,6 +448,15 @@ def setup_database():
             ('others', 5, FALSE, 0.0)
         ) AS v(material_type, points_per_kg, is_recyclable, co2_factor)
         WHERE NOT EXISTS (SELECT 1 FROM points_config WHERE points_config.material_type = v.material_type);
+
+        -- Insert test collectors (only if empty)
+        INSERT INTO collectors (collector_id, name, phone, email, assigned_colonies, vehicle_number, is_active)
+        SELECT * FROM (VALUES 
+            ('COL001', 'John Collector', '9876543210', 'john@collector.com', 'Colony A, Colony B', 'AP01AB1234', TRUE),
+            ('COL002', 'Jane Collector', '9876543211', 'jane@collector.com', 'Colony C, Colony D', 'AP01AB5678', TRUE),
+            ('COL003', 'Mike Collector', '9876543212', 'mike@collector.com', 'Colony E, Colony F', 'AP01AB9012', FALSE)
+        ) AS c(collector_id, name, phone, email, assigned_colonies, vehicle_number, is_active)
+        WHERE NOT EXISTS (SELECT 1 FROM collectors WHERE collectors.collector_id = c.collector_id);
         """
         
         # Execute the SQL

@@ -46,6 +46,24 @@ export const getAllCollectors = async () => {
 };
 
 /**
+ * Update collector status (activate/deactivate)
+ */
+export const updateCollectorStatus = async (collectorId, isActive) => {
+  const response = await api.put(`/admin/collectors/${collectorId}/status`, {
+    is_active: isActive
+  });
+  return response.data;
+};
+
+/**
+ * Update collector information
+ */
+export const updateCollector = async (collectorId, collectorData) => {
+  const response = await api.put(`/admin/collectors/${collectorId}`, collectorData);
+  return response.data;
+};
+
+/**
  * Get all colonies for admin
  */
 export const getAllColonies = async () => {
@@ -66,6 +84,24 @@ export const createColony = async (colonyData) => {
  */
 export const createCollectionPoint = async (pointData) => {
   const response = await api.post('/admin/collection-points', pointData);
+  return response.data;
+};
+
+/**
+ * Get all users
+ */
+export const getAllUsers = async () => {
+  const response = await api.get('/admin/users');
+  return response.data;
+};
+
+/**
+ * Update user status (activate/deactivate)
+ */
+export const updateUserStatus = async (userId, isActive) => {
+  const response = await api.put(`/admin/users/${userId}/status`, {
+    is_active: isActive
+  });
   return response.data;
 };
 
