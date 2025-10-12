@@ -28,9 +28,44 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Mobile debugging
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      console.log('📱 Mobile API Request:', {
+        url: config.url,
+        baseURL: config.baseURL,
+        method: config.method,
+        headers: config.headers
+      });
+    }
+    
     return config;
   },
   (error) => {
+    console.error('❌ API Request Error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Response interceptor for better error handling
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      console.error('📱 Mobile API Error:', {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method
+        }
+      });
+    }
     return Promise.reject(error);
   }
 );

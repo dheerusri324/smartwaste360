@@ -25,8 +25,19 @@ console.log('🔧 Environment Variables:', {
   NODE_ENV: process.env.NODE_ENV,
 });
 
+// Mobile debugging
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+console.log('📱 Device Info:', {
+  isMobile: isMobile,
+  userAgent: navigator.userAgent,
+  platform: navigator.platform,
+  onLine: navigator.onLine
+});
+
 // Force alert to confirm new build is loaded
 console.warn('🚀 NEW BUILD LOADED - API should use Railway, not localhost!');
-alert('NEW BUILD LOADED! Check console for API config.');
+if (isMobile) {
+  alert('MOBILE BUILD LOADED! API: ' + config.API_BASE_URL);
+}
 
 export default config;
