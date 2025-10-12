@@ -3,8 +3,8 @@
 
 const config = {
   // API Configuration - HARDCODED to avoid localhost issues
-  API_BASE_URL: 'https://smartwaste360backend-production.up.railway.app/api',
-  BACKEND_URL: 'https://smartwaste360backend-production.up.railway.app',
+  API_BASE_URL: 'https://smartwaste360-backend.onrender.com/api',
+  BACKEND_URL: 'https://smartwaste360-backend.onrender.com',
   
   // Environment
   ENVIRONMENT: 'production',

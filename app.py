@@ -84,6 +84,95 @@ def health():
         'version': '5.0.0'
     })
 
+@app.route('/add-missing-tables')
+def add_missing_tables():
+    """Add missing achievement and admin activity tables"""
+    try:
+        import psycopg2
+        
+        # Get database URL from environment
+        database_url = os.getenv('DATABASE_URL')
+        if not database_url:
+            return jsonify({'error': 'DATABASE_URL not found'}), 500
+        
+        # Connect to database
+        conn = psycopg2.connect(database_url)
+        cursor = conn.cursor()
+        
+        # Add missing tables
+        missing_tables_sql = """
+        -- Achievement tables
+        CREATE TABLE IF NOT EXISTS user_achievements (
+            id SERIAL PRIMARY KEY,
+            user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+            achievement_id VARCHAR(50) NOT NULL,
+            earned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            points_awarded INT DEFAULT 0,
+            UNIQUE(user_id, achievement_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS user_statistics (
+            user_id INT PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
+            waste_classifications INT DEFAULT 0,
+            plastic_classifications INT DEFAULT 0,
+            paper_classifications INT DEFAULT 0,
+            metal_classifications INT DEFAULT 0,
+            glass_classifications INT DEFAULT 0,
+            organic_classifications INT DEFAULT 0,
+            textile_classifications INT DEFAULT 0,
+            total_weight_kg DECIMAL(10,2) DEFAULT 0,
+            consecutive_days INT DEFAULT 0,
+            last_classification_date DATE,
+            colony_collections_triggered INT DEFAULT 0,
+            current_colony_rank INT,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        -- Admin activity logs table
+        CREATE TABLE IF NOT EXISTS admin_activity_logs (
+            log_id SERIAL PRIMARY KEY,
+            admin_id INT REFERENCES admins(admin_id),
+            action VARCHAR(100) NOT NULL,
+            target_type VARCHAR(50),
+            target_id VARCHAR(50),
+            details JSONB,
+            ip_address INET,
+            user_agent TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """
+        
+        # Execute the SQL
+        cursor.execute(missing_tables_sql)
+        conn.commit()
+        
+        # Verify all tables
+        cursor.execute("""
+            SELECT table_name FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            ORDER BY table_name;
+        """)
+        
+        tables = cursor.fetchall()
+        table_names = [table[0] for table in tables]
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            'message': 'Missing tables added successfully!',
+            'tables_verified': table_names,
+            'total_tables': len(table_names),
+            'new_tables': ['user_achievements', 'user_statistics', 'admin_activity_logs'],
+            'status': 'success'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'error': f'Adding missing tables failed: {str(e)}',
+            'status': 'failed'
+        }), 500
+
 @app.route('/setup-database')
 def setup_database():
     """Setup database tables - run this once after deployment"""

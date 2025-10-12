@@ -8,7 +8,7 @@ import json
 
 def test_backend_endpoints():
     """Test key backend endpoints"""
-    base_url = "https://smartwaste360backend-production.up.railway.app"
+    base_url = "https://smartwaste360-backend.onrender.com"
     
     print("🔧 Testing Backend Endpoints")
     print("=" * 40)
@@ -49,7 +49,7 @@ def test_cors():
     
     try:
         response = requests.options(
-            "https://smartwaste360backend-production.up.railway.app/api/auth/login",
+            "https://smartwaste360-backend.onrender.com/api/auth/login",
             headers={
                 'Origin': 'https://smartwaste360-frontend-b9jirihyv-121012dheeraj-8860s-projects.vercel.app',
                 'Access-Control-Request-Method': 'POST',
@@ -71,9 +71,9 @@ def main():
     
     print("\n" + "=" * 50)
     print("📋 Summary:")
-    print("   Backend URL: https://smartwaste360backend-production.up.railway.app")
+    print("   Backend URL: https://smartwaste360-backend.onrender.com")
     print("   Frontend URL: https://smartwaste360-frontend-b9jirihyv-121012dheeraj-8860s-projects.vercel.app")
-    print("   API Base: https://smartwaste360backend-production.up.railway.app/api")
+    print("   API Base: https://smartwaste360-backend.onrender.com/api")
 
 if __name__ == "__main__":
     main()

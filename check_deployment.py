@@ -10,7 +10,7 @@ from datetime import datetime
 def check_backend():
     """Check backend deployment status"""
     try:
-        response = requests.get('https://smartwaste360backend-production.up.railway.app/', timeout=10)
+        response = requests.get('https://smartwaste360-backend.onrender.com/', timeout=10)
         data = response.json()
         
         print("🔧 Backend Status:")
