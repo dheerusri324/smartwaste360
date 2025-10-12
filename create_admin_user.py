@@ -29,7 +29,7 @@ def create_admin_and_test():
     # Step 2: Login as admin
     print("\n🔐 Logging in as admin...")
     login_response = requests.post(f"{BASE_URL}/auth/login", json={
-        "identifier": "admina@gmail.com",
+        "identifier": "admin@gmail.com",
         "password": "admin"
     })
     
@@ -55,7 +55,8 @@ def create_admin_and_test():
         print("❌ Failed to get collectors")
         return
     
-    collectors = collectors_response.json()
+    collectors_data = collectors_response.json()
+    collectors = collectors_data.get('collectors', [])
     print(f"✅ Found {len(collectors)} collectors")
     
     if not collectors:
@@ -64,7 +65,7 @@ def create_admin_and_test():
     
     # Step 4: Test status update
     collector = collectors[0]
-    collector_id = collector['id']
+    collector_id = collector['collector_id']
     current_status = collector['is_active']
     new_status = not current_status
     
