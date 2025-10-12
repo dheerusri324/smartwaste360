@@ -100,6 +100,20 @@ def mobile_debug():
         'backend_url': 'https://smartwaste360-backend.onrender.com'
     })
 
+@app.route('/debug-headers')
+def debug_headers():
+    """Debug all request headers"""
+    from flask import request
+    return jsonify({
+        'status': 'debug_headers',
+        'all_headers': dict(request.headers),
+        'method': request.method,
+        'url': request.url,
+        'remote_addr': request.remote_addr,
+        'authorization_present': 'Authorization' in request.headers,
+        'content_type': request.headers.get('Content-Type', 'Not set')
+    })
+
 @app.route('/create-test-user')
 def create_test_user():
     """Create a test user for mobile testing"""
