@@ -87,13 +87,7 @@ export const createCollectionPoint = async (pointData) => {
   return response.data;
 };
 
-/**
- * Get all users
- */
-export const getAllUsers = async () => {
-  const response = await api.get('/admin/users');
-  return response.data;
-};
+
 
 /**
  * Update user status (activate/deactivate)
