@@ -26,16 +26,12 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 # --- INITIALIZE EXTENSIONS ---
 
 # 👇 2. INITIALIZE CORS AND ALLOW YOUR REACT APP'S ORIGIN 👇
-# Simple CORS setup that should definitely work
-from flask_cors import cross_origin
-
-# Basic CORS for all routes
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-    return response
+# Use Flask-CORS with explicit configuration
+CORS(app, 
+     origins=['*'],
+     allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
+     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+     supports_credentials=False)
 
 jwt = JWTManager(app)
 
@@ -70,8 +66,8 @@ app.register_blueprint(health.bp, url_prefix='/health')
 @app.route('/')
 def home():
     return jsonify({
-        'message': 'SmartWaste360 API is alive! CORS FIXED',
-        'version': '4.0.0',
+        'message': 'SmartWaste360 API is alive! CORS v5.0.0',
+        'version': '5.0.0',
         'status': 'production',
         'deployment': 'manual-cors-headers',
         'timestamp': '2025-10-12',
