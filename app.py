@@ -224,6 +224,36 @@ def setup_database():
             co2_factor DECIMAL(5,2)
         );
 
+        -- Admin table
+        CREATE TABLE IF NOT EXISTS admins (
+            admin_id SERIAL PRIMARY KEY,
+            username VARCHAR(50) UNIQUE NOT NULL,
+            email VARCHAR(100) UNIQUE NOT NULL,
+            password_hash VARCHAR(255) NOT NULL,
+            full_name VARCHAR(100),
+            role VARCHAR(20) DEFAULT 'admin',
+            is_active BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_login TIMESTAMP
+        );
+
+        -- Collection Points table
+        CREATE TABLE IF NOT EXISTS collection_points (
+            point_id SERIAL PRIMARY KEY,
+            colony_id INT,
+            point_name VARCHAR(100) NOT NULL,
+            location_description TEXT,
+            latitude DECIMAL(10,8),
+            longitude DECIMAL(11,8),
+            waste_types_accepted TEXT[], -- Array of waste types
+            max_capacity_kg DECIMAL(10,2) DEFAULT 100.00,
+            current_capacity_kg DECIMAL(10,2) DEFAULT 0.00,
+            is_active BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_collection_date DATE,
+            FOREIGN KEY (colony_id) REFERENCES colonies(colony_id) ON DELETE CASCADE
+        );
+
         -- Insert default points configuration (only if empty)
         INSERT INTO points_config (material_type, points_per_kg, is_recyclable, co2_factor) 
         SELECT * FROM (VALUES 
