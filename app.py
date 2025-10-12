@@ -92,6 +92,29 @@ def health():
         'version': '5.0.0'
     })
 
+@app.route('/debug-collectors')
+def debug_collectors():
+    """Debug endpoint to check collectors table"""
+    try:
+        from config.database import get_db
+        from psycopg2.extras import RealDictCursor
+        
+        with get_db() as db:
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute("SELECT collector_id, name, email, password_hash IS NOT NULL as has_password FROM collectors LIMIT 5")
+                collectors = cursor.fetchall()
+                
+                return jsonify({
+                    'status': 'success',
+                    'collectors_count': len(collectors),
+                    'collectors': [dict(c) for c in collectors]
+                })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        }), 500
+
 @app.route('/mobile-debug')
 def mobile_debug():
     """Debug endpoint for mobile connectivity issues"""
