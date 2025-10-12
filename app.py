@@ -26,15 +26,9 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 # --- INITIALIZE EXTENSIONS ---
 
 # 👇 2. INITIALIZE CORS AND ALLOW YOUR REACT APP'S ORIGIN 👇
-# Explicit CORS setup for Vercel domains
+# Temporary wildcard CORS for debugging
 CORS(app, 
-     origins=[
-         "https://smartwaste360-frontend.vercel.app",
-         "https://smartwaste360-frontend-dvmej32jt-121012dheeraj-8860s-projects.vercel.app",
-         "https://smartwaste360-frontend-5eg9cq0zr-121012dheeraj-8860s-projects.vercel.app", 
-         "http://localhost:3000"
-     ],
-     supports_credentials=True,
+     origins="*",
      allow_headers=["Content-Type", "Authorization", "X-Requested-With"],
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
@@ -72,12 +66,12 @@ app.register_blueprint(health.bp, url_prefix='/health')
 def home():
     return jsonify({
         'message': 'SmartWaste360 API is alive!',
-        'version': '2.0.0',
+        'version': '3.0.0',
         'status': 'production',
-        'deployment': 'simplified-nixpacks-config',
-        'timestamp': '2025-10-11',
+        'deployment': 'wildcard-cors-test',
+        'timestamp': '2025-10-12',
         'cors_enabled': True,
-        'cors_config': 'allow_all_origins'
+        'cors_config': 'wildcard_all_origins'
     })
 
 @app.route('/health')
