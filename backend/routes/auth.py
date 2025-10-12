@@ -4,6 +4,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
 import requests
 import traceback
+import bcrypt
 from models.user import User
 from models.colony import Colony
 from models.collector import Collector
@@ -174,22 +175,39 @@ def login():
         if not identifier or not password:
             return jsonify({'error': 'Username/email and password required'}), 400
         
+        # First try to find user in users table
         user = User.get_user_by_username_or_email(identifier)
         
-        if not user or not User.verify_password(user['password_hash'], password):
-            return jsonify({'error': 'Invalid credentials'}), 401
+        if user and User.verify_password(user['password_hash'], password):
+            # Regular user login
+            user_id = user['user_id']
+            additional_claims = {"role": "user"}
+            access_token = create_access_token(identity=str(user_id), additional_claims=additional_claims)
+            
+            User.update_last_login(user_id)
+            user.pop('password_hash', None)
+            
+            return jsonify({ 'message': 'Login successful', 'access_token': access_token, 'user': user }), 200
         
-        # --- THIS IS THE FIX ---
-        # The identity is now just the ID. We add the role as an "additional claim".
-        user_id = user['user_id']
-        additional_claims = {"role": "user"}
-        access_token = create_access_token(identity=str(user_id), additional_claims=additional_claims)
+        # If not found in users, try admins table
+        from models.admin import Admin
+        admin = Admin.get_by_email(identifier) or Admin.get_by_username(identifier)
         
-        User.update_last_login(user_id)
-        user.pop('password_hash', None)
+        if admin and bcrypt.checkpw(password.encode('utf-8'), admin['password_hash'].encode('utf-8')):
+            # Admin login
+            admin_id = admin['admin_id']
+            additional_claims = {"role": "admin"}
+            access_token = create_access_token(identity=str(admin_id), additional_claims=additional_claims)
+            
+            admin.pop('password_hash', None)
+            
+            return jsonify({ 'message': 'Admin login successful', 'access_token': access_token, 'admin': admin }), 200
         
-        return jsonify({ 'message': 'Login successful', 'access_token': access_token, 'user': user }), 200
+        return jsonify({'error': 'Invalid credentials'}), 401
+        
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': 'An internal server error occurred'}), 500
 
 @bp.route('/profile', methods=['GET'])
