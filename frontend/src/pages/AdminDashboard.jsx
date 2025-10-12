@@ -11,6 +11,7 @@ import {
   Filter,
   Plus
 } from 'lucide-react';
+import { getAllCollectors, updateCollectorStatus } from '../services/admin';
 
 const AdminDashboard = () => {
   const [collectors, setCollectors] = useState([]);
@@ -27,46 +28,16 @@ const AdminDashboard = () => {
     setLoading(true);
     setError('');
     try {
-      // For now, we'll create mock data since the backend endpoint needs implementation
-      const mockCollectors = [
-        {
-          collector_id: 1,
-          name: 'Paper Collector',
-          email: 'paper@gmail.com',
-          phone: '9876543210',
-          vehicle_number: 'KA01AB1234',
-          is_active: true,
-          created_at: '2025-01-01T10:00:00Z',
-          total_collections: 45,
-          last_collection: '2025-10-09T14:30:00Z'
-        },
-        {
-          collector_id: 2,
-          name: 'Metal Collector',
-          email: 'metal@gmail.com',
-          phone: '9876543211',
-          vehicle_number: 'KA01CD5678',
-          is_active: true,
-          created_at: '2025-01-15T09:00:00Z',
-          total_collections: 32,
-          last_collection: '2025-10-08T16:45:00Z'
-        },
-        {
-          collector_id: 3,
-          name: 'Organic Waste Collector',
-          email: 'organic@gmail.com',
-          phone: '9876543212',
-          vehicle_number: 'KA01EF9012',
-          is_active: false,
-          created_at: '2025-02-01T11:00:00Z',
-          total_collections: 18,
-          last_collection: '2025-09-30T12:00:00Z'
-        }
-      ];
-      setCollectors(mockCollectors);
+      // Call the real backend API
+      const response = await getAllCollectors();
+      setCollectors(response.collectors || []);
+      console.log('✅ Loaded collectors from backend:', response.collectors?.length || 0);
     } catch (err) {
       setError('Failed to load collectors data');
-      console.error('Collectors error:', err);
+      console.error('❌ Collectors error:', err);
+      
+      // Fallback to empty array if API fails
+      setCollectors([]);
     } finally {
       setLoading(false);
     }
@@ -84,12 +55,30 @@ const AdminDashboard = () => {
     return matchesSearch && matchesStatus;
   });
 
-  const toggleCollectorStatus = (collectorId) => {
-    setCollectors(prev => prev.map(collector => 
-      collector.collector_id === collectorId 
-        ? { ...collector, is_active: !collector.is_active }
-        : collector
-    ));
+  const toggleCollectorStatus = async (collectorId) => {
+    try {
+      // Find the collector to get current status
+      const collector = collectors.find(c => c.collector_id === collectorId);
+      if (!collector) return;
+
+      const newStatus = !collector.is_active;
+
+      // Update backend first
+      await updateCollectorStatus(collectorId, newStatus);
+
+      // Update local state only after successful backend update
+      setCollectors(prev => prev.map(c => 
+        c.collector_id === collectorId 
+          ? { ...c, is_active: newStatus }
+          : c
+      ));
+
+      console.log(`✅ Collector ${collector.name} ${newStatus ? 'activated' : 'deactivated'} successfully`);
+    } catch (error) {
+      console.error('❌ Failed to update collector status:', error);
+      // Optionally show error message to user
+      alert('Failed to update collector status. Please try again.');
+    }
   };
 
   const formatDate = (dateString) => {
