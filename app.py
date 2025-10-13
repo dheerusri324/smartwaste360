@@ -101,13 +101,62 @@ def debug_collectors():
         
         with get_db() as db:
             with db.cursor(cursor_factory=RealDictCursor) as cursor:
-                cursor.execute("SELECT collector_id, name, email, password_hash IS NOT NULL as has_password FROM collectors LIMIT 5")
+                # First check table structure
+                cursor.execute("""
+                    SELECT column_name, data_type 
+                    FROM information_schema.columns 
+                    WHERE table_name = 'collectors'
+                    ORDER BY ordinal_position
+                """)
+                columns = cursor.fetchall()
+                
+                # Then get sample data
+                cursor.execute("SELECT * FROM collectors LIMIT 3")
                 collectors = cursor.fetchall()
                 
                 return jsonify({
                     'status': 'success',
+                    'table_structure': [dict(c) for c in columns],
                     'collectors_count': len(collectors),
-                    'collectors': [dict(c) for c in collectors]
+                    'sample_collectors': [dict(c) for c in collectors]
+                })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        }), 500
+
+@app.route('/fix-collectors-table')
+def fix_collectors_table():
+    """Fix collectors table by adding missing password_hash column"""
+    try:
+        from config.database import get_db
+        
+        with get_db() as db:
+            with db.cursor() as cursor:
+                # Add password_hash column if it doesn't exist
+                cursor.execute("""
+                    ALTER TABLE collectors 
+                    ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255)
+                """)
+                
+                # Add created_at column if it doesn't exist
+                cursor.execute("""
+                    ALTER TABLE collectors 
+                    ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                """)
+                
+                # Add is_active column if it doesn't exist
+                cursor.execute("""
+                    ALTER TABLE collectors 
+                    ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE
+                """)
+                
+                db.commit()
+                
+                return jsonify({
+                    'status': 'success',
+                    'message': 'Collectors table structure fixed'
                 })
     except Exception as e:
         return jsonify({
