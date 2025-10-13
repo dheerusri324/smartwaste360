@@ -9,15 +9,23 @@ class Collector:
     def create(name, phone, email, password, vehicle_number=None):
         """Creates a new collector with a hashed password."""
         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        sql = """
-            INSERT INTO collectors (name, phone, email, password_hash, vehicle_number)
-            VALUES (%s, %s, %s, %s, %s) 
-            RETURNING collector_id
-        """
-        params = (name, phone, email, password_hash, vehicle_number)
+        
+        # Generate collector_id
         with get_db() as db:
             if not db: raise ConnectionError("Database connection not available.")
             with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Get the next collector number
+                cursor.execute("SELECT COUNT(*) as count FROM collectors")
+                count = cursor.fetchone()['count']
+                collector_id = f"COL{str(count + 1).zfill(3)}"
+                
+                # Insert the new collector
+                sql = """
+                    INSERT INTO collectors (collector_id, name, phone, email, password_hash, vehicle_number)
+                    VALUES (%s, %s, %s, %s, %s, %s) 
+                    RETURNING collector_id
+                """
+                params = (collector_id, name, phone, email, password_hash, vehicle_number)
                 cursor.execute(sql, params)
                 new_collector = cursor.fetchone()
                 db.commit()
