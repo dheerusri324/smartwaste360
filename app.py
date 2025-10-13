@@ -75,9 +75,9 @@ app.register_blueprint(health.bp, url_prefix='/health')
 def home():
     return jsonify({
         'message': 'SmartWaste360 API is alive! CORS v5.4.0',
-        'version': '5.5.0',
+        'version': '5.6.0',
         'status': 'production',
-        'deployment': 'admin-login-fixed',
+        'deployment': 'collector-auth-fixed',
         'timestamp': '2025-10-12',
         'cors_enabled': True,
         'cors_method': 'after_request_headers'
