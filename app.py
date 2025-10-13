@@ -92,6 +92,40 @@ def health():
         'version': '5.0.0'
     })
 
+@app.route('/debug-colonies')
+def debug_colonies():
+    """Debug endpoint to check colonies table structure"""
+    try:
+        from config.database import get_db
+        from psycopg2.extras import RealDictCursor
+        
+        with get_db() as db:
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Check table structure
+                cursor.execute("""
+                    SELECT column_name, data_type 
+                    FROM information_schema.columns 
+                    WHERE table_name = 'colonies'
+                    ORDER BY ordinal_position
+                """)
+                columns = cursor.fetchall()
+                
+                # Get sample data
+                cursor.execute("SELECT * FROM colonies LIMIT 3")
+                colonies = cursor.fetchall()
+                
+                return jsonify({
+                    'status': 'success',
+                    'table_structure': [dict(c) for c in columns],
+                    'colonies_count': len(colonies),
+                    'sample_colonies': [dict(c) for c in colonies]
+                })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        }), 500
+
 @app.route('/debug-collectors')
 def debug_collectors():
     """Debug endpoint to check collectors table"""

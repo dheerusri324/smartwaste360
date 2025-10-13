@@ -15,9 +15,9 @@ def test_simple_collector():
     # Test with minimal data first
     collector_data = {
         "role": "collector",
-        "full_name": "Simple Test",
-        "phone": "1234567890", 
-        "email": "simple@test.com",
+        "full_name": "New Test Collector",
+        "phone": "9999999999", 
+        "email": "newtest@collector.com",
         "password": "test123"
     }
     
