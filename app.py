@@ -160,6 +160,56 @@ def debug_collectors():
             'error': str(e)
         }), 500
 
+@app.route('/fix-colonies-table')
+def fix_colonies_table():
+    """Fix colonies table by adding missing waste tracking columns"""
+    try:
+        from config.database import get_db
+        
+        with get_db() as db:
+            with db.cursor() as cursor:
+                # Add waste tracking columns
+                waste_columns = [
+                    "current_plastic_kg DECIMAL(10,2) DEFAULT 0",
+                    "current_paper_kg DECIMAL(10,2) DEFAULT 0", 
+                    "current_metal_kg DECIMAL(10,2) DEFAULT 0",
+                    "current_glass_kg DECIMAL(10,2) DEFAULT 0",
+                    "current_textile_kg DECIMAL(10,2) DEFAULT 0",
+                    "current_dry_waste_kg DECIMAL(10,2) DEFAULT 0",
+                    "last_collection_date TIMESTAMP",
+                    "collection_frequency_days INTEGER DEFAULT 7"
+                ]
+                
+                for column in waste_columns:
+                    cursor.execute(f"""
+                        ALTER TABLE colonies 
+                        ADD COLUMN IF NOT EXISTS {column}
+                    """)
+                
+                # Add some sample waste data for testing
+                cursor.execute("""
+                    UPDATE colonies 
+                    SET current_plastic_kg = 6.5,
+                        current_paper_kg = 8.2,
+                        current_metal_kg = 1.5,
+                        current_glass_kg = 3.0,
+                        current_textile_kg = 2.1,
+                        current_dry_waste_kg = 12.5
+                    WHERE colony_id = 1
+                """)
+                
+                db.commit()
+                
+                return jsonify({
+                    'status': 'success',
+                    'message': 'Colonies table structure fixed with waste tracking columns'
+                })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        }), 500
+
 @app.route('/fix-collectors-table')
 def fix_collectors_table():
     """Fix collectors table by adding missing password_hash column"""
