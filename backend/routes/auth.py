@@ -124,17 +124,25 @@ def register():
             if not all(field in data for field in required):
                 return jsonify({'error': 'Missing required fields for collector registration'}), 400
 
-            if Collector.get_by_email(data['email']):
-                return jsonify({'error': 'A collector with this email already exists'}), 409
-            
-            collector_id = Collector.create(
-                name=data['full_name'],
-                phone=data['phone'],
-                email=data['email'],
-                password=data['password'],
-                vehicle_number=data.get('vehicle_number')
-            )
-            return jsonify({'message': 'Collector registered successfully', 'collector_id': collector_id}), 201
+            try:
+                # Check if collector already exists
+                existing_collector = Collector.get_by_email(data['email'])
+                if existing_collector:
+                    return jsonify({'error': 'A collector with this email already exists'}), 409
+                
+                # Create new collector
+                collector_id = Collector.create(
+                    name=data['full_name'],
+                    phone=data['phone'],
+                    email=data['email'],
+                    password=data['password'],
+                    vehicle_number=data.get('vehicle_number')
+                )
+                return jsonify({'message': 'Collector registered successfully', 'collector_id': collector_id}), 201
+                
+            except Exception as collector_error:
+                traceback.print_exc()
+                return jsonify({'error': f'Collector registration failed: {str(collector_error)}'}), 500
         
         elif role == 'admin':
             required = ['username', 'full_name', 'email', 'password']
