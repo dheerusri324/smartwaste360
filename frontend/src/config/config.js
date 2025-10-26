@@ -13,8 +13,8 @@ const config = {
   DEBUG: true,
   
   // Force cache bust
-  VERSION: '3.0.0',
-  UPDATED: '2025-10-26-NUCLEAR-REDEPLOY-' + Date.now()
+  VERSION: '3.0.1',
+  UPDATED: '2025-10-26-DATABASE-SYNC-FIX-' + Date.now()
 };
 
 // Always log configuration to debug the issue
@@ -35,9 +35,9 @@ console.log('📱 Device Info:', {
 });
 
 // Force alert to confirm new build is loaded
-console.warn('💥 NUCLEAR REDEPLOY v3.0.0 LOADED - API URL: ' + config.API_BASE_URL);
+console.warn('🔄 DATABASE SYNC FIX v3.0.1 LOADED - API URL: ' + config.API_BASE_URL);
 console.warn('🎯 TIMESTAMP: ' + config.UPDATED);
-console.warn('🚀 ALL FEATURES IMPLEMENTED - ADMIN DASHBOARD READY!');
+console.warn('🗄️ FIXING DATABASE SYNC AND UI ISSUES!');
 if (isMobile) {
   alert('💥 NUCLEAR REDEPLOY v3.0.0! API: ' + config.API_BASE_URL);
 }

@@ -114,6 +114,52 @@ def test_collectors():
             'message': 'Collectors query failed'
         }), 500
 
+@app.route('/debug-database')
+def debug_database():
+    """Debug endpoint to check database contents"""
+    try:
+        from config.database import get_db
+        from psycopg2.extras import RealDictCursor
+        
+        with get_db() as db:
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Check users count
+                cursor.execute("SELECT COUNT(*) as count FROM users")
+                users_count = cursor.fetchone()['count']
+                
+                # Check collectors count
+                cursor.execute("SELECT COUNT(*) as count FROM collectors")
+                collectors_count = cursor.fetchone()['count']
+                
+                # Check admins count
+                cursor.execute("SELECT COUNT(*) as count FROM admins")
+                admins_count = cursor.fetchone()['count']
+                
+                # Check recent users (last 7 days)
+                cursor.execute("""
+                    SELECT COUNT(*) as count FROM users 
+                    WHERE created_at > NOW() - INTERVAL '7 days'
+                """)
+                recent_users = cursor.fetchone()['count']
+                
+                return jsonify({
+                    'status': 'success',
+                    'database_stats': {
+                        'total_users': users_count,
+                        'total_collectors': collectors_count,
+                        'total_admins': admins_count,
+                        'recent_users_7_days': recent_users
+                    },
+                    'message': 'Database accessible',
+                    'version': '3.0.0'
+                })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e),
+            'message': 'Database query failed'
+        }), 500
+
 @app.route('/debug-colonies')
 def debug_colonies():
     """Debug endpoint to check colonies table structure"""
