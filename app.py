@@ -79,13 +79,14 @@ app.register_blueprint(health.bp, url_prefix='/health')
 @app.route('/')
 def home():
     return jsonify({
-        'message': 'SmartWaste360 API is alive! CORS v5.6.0',
-        'version': '5.7.0',
+        'message': 'SmartWaste360 API is alive! PRODUCTION LAUNCH v3.0.0',
+        'version': '3.0.0',
         'status': 'production',
-        'deployment': 'collection-completion-added',
-        'timestamp': '2025-10-12',
+        'deployment': 'admin-collectors-fix-deployed',
+        'timestamp': '2025-10-26',
         'cors_enabled': True,
-        'cors_method': 'after_request_headers'
+        'cors_method': 'after_request_headers',
+        'admin_collectors_fix': 'deployed'
     })
 
 @app.route('/health')
@@ -93,9 +94,29 @@ def health():
     return jsonify({
         'status': 'healthy',
         'cors_origins': 'all_origins_allowed',
-        'timestamp': '2025-10-12',
-        'version': '5.0.0'
+        'timestamp': '2025-10-26',
+        'version': '3.0.0',
+        'admin_collectors_fix': 'active'
     })
+
+@app.route('/test-collectors')
+def test_collectors():
+    """Test endpoint to verify collectors query works"""
+    try:
+        from models.collector import Collector
+        collectors = Collector.get_all_collectors()
+        return jsonify({
+            'status': 'success',
+            'collectors_count': len(collectors),
+            'message': 'Collectors query working!',
+            'version': '3.0.0'
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e),
+            'message': 'Collectors query failed'
+        }), 500
 
 @app.route('/debug-colonies')
 def debug_colonies():
