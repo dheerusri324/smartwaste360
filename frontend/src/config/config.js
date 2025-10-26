@@ -3,8 +3,8 @@
 
 const config = {
   // API Configuration - Use environment variables for flexibility
-  API_BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
-  BACKEND_URL: process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000',
+  API_BASE_URL: process.env.REACT_APP_API_URL || 'https://smartwaste360-backend.onrender.com/api',
+  BACKEND_URL: process.env.REACT_APP_BACKEND_URL || 'https://smartwaste360-backend.onrender.com',
   
   // Environment
   ENVIRONMENT: process.env.REACT_APP_ENVIRONMENT || 'development',
