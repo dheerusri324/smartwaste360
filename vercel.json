@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "name": "smartwaste360-frontend",
-  "buildCommand": "cd frontend && npm run build",
+  "name": "smartwaste360-frontend-v3",
+  "buildCommand": "cd frontend && npm ci && npm run build",
   "outputDirectory": "frontend/build",
-  "installCommand": "cd frontend && npm install",
+  "installCommand": "cd frontend && npm ci",
   "devCommand": "cd frontend && npm start",
   "framework": "create-react-app",
   "routes": [
@@ -25,14 +25,14 @@
     "REACT_APP_API_URL": "https://smartwaste360-backend.onrender.com/api",
     "REACT_APP_BACKEND_URL": "https://smartwaste360-backend.onrender.com",
     "REACT_APP_ENVIRONMENT": "production",
-    "REACT_APP_BUILD_ID": "PRODUCTION-LAUNCH-v3.0.0"
+    "REACT_APP_BUILD_ID": "NUCLEAR-REDEPLOY-v3.0.0-FORCE"
   },
   "build": {
     "env": {
       "REACT_APP_API_URL": "https://smartwaste360-backend.onrender.com/api",
       "REACT_APP_BACKEND_URL": "https://smartwaste360-backend.onrender.com",
       "REACT_APP_ENVIRONMENT": "production",
-      "REACT_APP_BUILD_ID": "PRODUCTION-LAUNCH-v3.0.0"
+      "REACT_APP_BUILD_ID": "NUCLEAR-REDEPLOY-v3.0.0-FORCE"
     }
   }
 }

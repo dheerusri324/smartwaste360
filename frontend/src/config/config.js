@@ -14,7 +14,7 @@ const config = {
   
   // Force cache bust
   VERSION: '3.0.0',
-  UPDATED: '2025-10-26-PRODUCTION-LAUNCH'
+  UPDATED: '2025-10-26-NUCLEAR-REDEPLOY-' + Date.now()
 };
 
 // Always log configuration to debug the issue
@@ -35,10 +35,11 @@ console.log('📱 Device Info:', {
 });
 
 // Force alert to confirm new build is loaded
-console.warn('🚀 PRODUCTION v3.0.0 LOADED - API URL: ' + config.API_BASE_URL);
-console.warn('🎯 LAUNCH VERSION: All features implemented!');
+console.warn('💥 NUCLEAR REDEPLOY v3.0.0 LOADED - API URL: ' + config.API_BASE_URL);
+console.warn('🎯 TIMESTAMP: ' + config.UPDATED);
+console.warn('🚀 ALL FEATURES IMPLEMENTED - ADMIN DASHBOARD READY!');
 if (isMobile) {
-  alert('PRODUCTION v3.0.0 LOADED! API: ' + config.API_BASE_URL);
+  alert('💥 NUCLEAR REDEPLOY v3.0.0! API: ' + config.API_BASE_URL);
 }
 
 export default config;
