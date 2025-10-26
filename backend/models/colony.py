@@ -5,6 +5,15 @@ from psycopg2.extras import RealDictCursor
 
 class Colony:
     @staticmethod
+    def get_by_id(colony_id):
+        """Get colony by ID"""
+        with get_db() as db:
+            if not db: raise ConnectionError("Database connection not available.")
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute("SELECT * FROM colonies WHERE colony_id = %s", (colony_id,))
+                return cursor.fetchone()
+    
+    @staticmethod
     def find_or_create(colony_name, latitude=None, longitude=None):
         """
         Smart colony detection with location-based grouping.
