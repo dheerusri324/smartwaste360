@@ -75,9 +75,9 @@ app.register_blueprint(health.bp, url_prefix='/health')
 def home():
     return jsonify({
         'message': 'SmartWaste360 API is alive! CORS v5.6.0',
-        'version': '5.6.0',
+        'version': '5.7.0',
         'status': 'production',
-        'deployment': 'collector-auth-fixed',
+        'deployment': 'collection-completion-added',
         'timestamp': '2025-10-12',
         'cors_enabled': True,
         'cors_method': 'after_request_headers'
@@ -168,7 +168,7 @@ def fix_colonies_table():
         
         with get_db() as db:
             with db.cursor() as cursor:
-                # Add waste tracking columns
+                # Add waste tracking columns to colonies
                 waste_columns = [
                     "current_plastic_kg DECIMAL(10,2) DEFAULT 0",
                     "current_paper_kg DECIMAL(10,2) DEFAULT 0", 
@@ -183,6 +183,19 @@ def fix_colonies_table():
                 for column in waste_columns:
                     cursor.execute(f"""
                         ALTER TABLE colonies 
+                        ADD COLUMN IF NOT EXISTS {column}
+                    """)
+                
+                # Add missing columns to collection_bookings table
+                booking_columns = [
+                    "total_weight DECIMAL(10,2) DEFAULT 0",
+                    "notes TEXT",
+                    "waste_types_collected TEXT"
+                ]
+                
+                for column in booking_columns:
+                    cursor.execute(f"""
+                        ALTER TABLE collection_bookings 
                         ADD COLUMN IF NOT EXISTS {column}
                     """)
                 
@@ -202,7 +215,7 @@ def fix_colonies_table():
                 
                 return jsonify({
                     'status': 'success',
-                    'message': 'Colonies table structure fixed with waste tracking columns'
+                    'message': 'Colonies and collection_bookings tables structure fixed'
                 })
     except Exception as e:
         return jsonify({
@@ -212,7 +225,7 @@ def fix_colonies_table():
 
 @app.route('/fix-collectors-table')
 def fix_collectors_table():
-    """Fix collectors table by adding missing password_hash column"""
+    """Fix collectors table by adding missing columns"""
     try:
         from config.database import get_db
         
@@ -236,11 +249,17 @@ def fix_collectors_table():
                     ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT TRUE
                 """)
                 
+                # Add total_weight_collected column if it doesn't exist
+                cursor.execute("""
+                    ALTER TABLE collectors 
+                    ADD COLUMN IF NOT EXISTS total_weight_collected DECIMAL(10,2) DEFAULT 0
+                """)
+                
                 db.commit()
                 
                 return jsonify({
                     'status': 'success',
-                    'message': 'Collectors table structure fixed'
+                    'message': 'Collectors table structure fixed with all required columns'
                 })
     except Exception as e:
         return jsonify({

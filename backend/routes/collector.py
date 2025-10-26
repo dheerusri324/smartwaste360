@@ -221,3 +221,104 @@ def get_ready_colonies():
     except Exception as e:
         traceback.print_exc()
         return jsonify({'error': 'An internal server error occurred'}), 500
+
+@bp.route('/complete-collection', methods=['POST'])
+@jwt_required()
+def complete_collection():
+    """Complete a waste collection and update colony waste amounts"""
+    try:
+        claims = get_jwt()
+        if claims.get('role') != 'collector':
+            return jsonify({"msg": "Access denied: Only collectors can complete collections"}), 403
+        
+        collector_id = get_jwt_identity()
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['colony_id', 'total_weight', 'waste_types']
+        if not all(field in data for field in required_fields):
+            return jsonify({'error': 'Missing required fields: colony_id, total_weight, waste_types'}), 400
+        
+        colony_id = data['colony_id']
+        total_weight = float(data['total_weight'])
+        waste_types = data['waste_types']  # Dict with waste type amounts
+        notes = data.get('notes', '')
+        
+        # Validate colony exists
+        from models.colony import Colony
+        colony = Colony.get_by_id(colony_id)
+        if not colony:
+            return jsonify({'error': 'Colony not found'}), 404
+        
+        # Create collection record
+        from config.database import get_db
+        from psycopg2.extras import RealDictCursor
+        
+        with get_db() as db:
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Insert collection record
+                cursor.execute("""
+                    INSERT INTO collection_bookings 
+                    (colony_id, collector_id, booking_date, time_slot, status, total_weight, notes, waste_types_collected)
+                    VALUES (%s, %s, CURRENT_DATE, 'completed', 'completed', %s, %s, %s)
+                    RETURNING booking_id
+                """, (colony_id, collector_id, total_weight, notes, str(waste_types)))
+                
+                booking_id = cursor.fetchone()['booking_id']
+                
+                # Update colony waste amounts (reduce by collected amounts)
+                update_fields = []
+                update_values = []
+                
+                if waste_types.get('plastic', 0) > 0:
+                    update_fields.append("current_plastic_kg = GREATEST(0, current_plastic_kg - %s)")
+                    update_values.append(float(waste_types['plastic']))
+                
+                if waste_types.get('paper', 0) > 0:
+                    update_fields.append("current_paper_kg = GREATEST(0, current_paper_kg - %s)")
+                    update_values.append(float(waste_types['paper']))
+                
+                if waste_types.get('metal', 0) > 0:
+                    update_fields.append("current_metal_kg = GREATEST(0, current_metal_kg - %s)")
+                    update_values.append(float(waste_types['metal']))
+                
+                if waste_types.get('glass', 0) > 0:
+                    update_fields.append("current_glass_kg = GREATEST(0, current_glass_kg - %s)")
+                    update_values.append(float(waste_types['glass']))
+                
+                if waste_types.get('textile', 0) > 0:
+                    update_fields.append("current_textile_kg = GREATEST(0, current_textile_kg - %s)")
+                    update_values.append(float(waste_types['textile']))
+                
+                if waste_types.get('organic', 0) > 0:
+                    update_fields.append("current_dry_waste_kg = GREATEST(0, current_dry_waste_kg - %s)")
+                    update_values.append(float(waste_types['organic']))
+                
+                if update_fields:
+                    update_sql = f"""
+                        UPDATE colonies 
+                        SET {', '.join(update_fields)}, last_collection_date = CURRENT_TIMESTAMP
+                        WHERE colony_id = %s
+                    """
+                    update_values.append(colony_id)
+                    cursor.execute(update_sql, update_values)
+                
+                # Update collector's total weight collected
+                cursor.execute("""
+                    UPDATE collectors 
+                    SET total_weight_collected = COALESCE(total_weight_collected, 0) + %s
+                    WHERE collector_id = %s
+                """, (total_weight, collector_id))
+                
+                db.commit()
+                
+                return jsonify({
+                    'message': 'Collection completed successfully',
+                    'booking_id': booking_id,
+                    'total_weight': total_weight,
+                    'colony_updated': True
+                }), 200
+                
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': 'An internal server error occurred'}), 500
