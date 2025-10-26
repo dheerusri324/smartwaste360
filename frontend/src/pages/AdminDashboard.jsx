@@ -17,7 +17,7 @@ import { getAllCollectors, updateCollectorStatus, getAdminOverview } from '../se
 import CollectionPointsManager from '../components/admin/CollectionPointsManager';
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('collectors');
+  const [activeTab, setActiveTab] = useState('collection-points');
   const [collectors, setCollectors] = useState([]);
   const [overviewData, setOverviewData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,7 +26,7 @@ const AdminDashboard = () => {
   const [statusFilter, setStatusFilter] = useState('all');
 
   const tabs = [
-    { id: 'collectors', label: 'Collectors', icon: Truck },
+    // { id: 'collectors', label: 'Collectors', icon: Truck }, // Temporarily disabled due to backend issue
     { id: 'collection-points', label: 'Collection Points', icon: MapPin },
     { id: 'users', label: 'Users', icon: Users },
     { id: 'settings', label: 'Settings', icon: Settings }
@@ -40,47 +40,28 @@ const AdminDashboard = () => {
     setLoading(true);
     setError('');
     try {
-      console.log('🔄 [ADMIN DASHBOARD v2.0] Loading admin dashboard data...');
+      console.log('🔄 [ADMIN DASHBOARD v3.0] Loading admin dashboard data...');
+      console.log('⚠️ Collectors temporarily disabled - loading overview only');
       
-      // Load both collectors and overview data
-      const [collectorsResponse, overviewResponse] = await Promise.all([
-        getAllCollectors(),
-        getAdminOverview()
-      ]);
+      // Load only overview data, skip collectors due to backend issue
+      const overviewResponse = await getAdminOverview();
       
-      console.log('📊 Raw collectors response:', collectorsResponse);
       console.log('📊 Raw overview response:', overviewResponse);
       
-      setCollectors(collectorsResponse.collectors || []);
+      setCollectors([]); // Empty collectors for now
       setOverviewData(overviewResponse);
       
-      console.log('✅ Loaded collectors from backend:', collectorsResponse.collectors?.length || 0);
       console.log('✅ Loaded overview data:', overviewResponse);
       console.log('📈 Overview stats:', overviewResponse?.overview);
       
-      // Force a re-render to ensure stats update
-      setTimeout(() => {
-        console.log('🔄 Forcing stats update...');
-        setOverviewData(prev => ({ ...prev }));
-      }, 100);
-      
     } catch (err) {
-      setError('Failed to load dashboard data');
       console.error('❌ Dashboard error:', err);
       console.error('❌ Error details:', err.response?.data || err.message);
       
-      // Try to load collectors only as fallback
-      try {
-        console.log('🔄 Trying to load collectors only...');
-        const collectorsResponse = await getAllCollectors();
-        setCollectors(collectorsResponse.collectors || []);
-        console.log('✅ Loaded collectors as fallback');
-      } catch (fallbackErr) {
-        console.error('❌ Fallback also failed:', fallbackErr);
-        setCollectors([]);
-      }
-      
+      // Set empty data as fallback
+      setCollectors([]);
       setOverviewData(null);
+      setError('Dashboard loaded with limited functionality');
     } finally {
       setLoading(false);
     }
