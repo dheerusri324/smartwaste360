@@ -155,7 +155,7 @@ class Collector:
         sql = """
             SELECT collector_id, name, phone, email, vehicle_number, 
                    is_active, created_at,
-                   COALESCE(total_weight_collected, 0) as total_weight_collected,
+                   0 as total_weight_collected,
                    0 as total_collections
             FROM collectors
             ORDER BY created_at DESC

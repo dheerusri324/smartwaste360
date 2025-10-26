@@ -17,7 +17,7 @@ import { getAllCollectors, updateCollectorStatus, getAdminOverview } from '../se
 import CollectionPointsManager from '../components/admin/CollectionPointsManager';
 
 const AdminDashboard = () => {
-  const [activeTab, setActiveTab] = useState('collection-points');
+  const [activeTab, setActiveTab] = useState('collectors');
   const [collectors, setCollectors] = useState([]);
   const [overviewData, setOverviewData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,7 +26,7 @@ const AdminDashboard = () => {
   const [statusFilter, setStatusFilter] = useState('all');
 
   const tabs = [
-    // { id: 'collectors', label: 'Collectors', icon: Truck }, // Temporarily disabled due to backend issue
+    { id: 'collectors', label: 'Collectors', icon: Truck },
     { id: 'collection-points', label: 'Collection Points', icon: MapPin },
     { id: 'users', label: 'Users', icon: Users },
     { id: 'settings', label: 'Settings', icon: Settings }
@@ -41,27 +41,28 @@ const AdminDashboard = () => {
     setError('');
     try {
       console.log('🔄 [ADMIN DASHBOARD v3.0] Loading admin dashboard data...');
-      console.log('⚠️ Collectors temporarily disabled - loading overview only');
       
-      // Load only overview data, skip collectors due to backend issue
-      const overviewResponse = await getAdminOverview();
+      // Load both collectors and overview data
+      const [collectorsResponse, overviewResponse] = await Promise.all([
+        getAllCollectors(),
+        getAdminOverview()
+      ]);
       
+      console.log('📊 Raw collectors response:', collectorsResponse);
       console.log('📊 Raw overview response:', overviewResponse);
       
-      setCollectors([]); // Empty collectors for now
+      setCollectors(collectorsResponse.collectors || []);
       setOverviewData(overviewResponse);
       
+      console.log('✅ Loaded collectors from backend:', collectorsResponse.collectors?.length || 0);
       console.log('✅ Loaded overview data:', overviewResponse);
-      console.log('📈 Overview stats:', overviewResponse?.overview);
       
     } catch (err) {
       console.error('❌ Dashboard error:', err);
       console.error('❌ Error details:', err.response?.data || err.message);
-      
-      // Set empty data as fallback
+      setError('Failed to load dashboard data');
       setCollectors([]);
       setOverviewData(null);
-      setError('Dashboard loaded with limited functionality');
     } finally {
       setLoading(false);
     }
