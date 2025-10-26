@@ -1,15 +1,11 @@
 {
   "version": 2,
   "name": "smartwaste360-frontend",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "build"
-      }
-    }
-  ],
+  "buildCommand": "cd frontend && npm run build",
+  "outputDirectory": "frontend/build",
+  "installCommand": "cd frontend && npm install",
+  "devCommand": "cd frontend && npm start",
+  "framework": "create-react-app",
   "routes": [
     {
       "src": "/static/(.*)",

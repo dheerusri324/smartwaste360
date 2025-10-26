@@ -1,0 +1,35 @@
+# Ignore backend files and directories
+backend/
+*.py
+requirements.txt
+wsgi.py
+app.py
+Procfile
+render.yaml
+.env
+.env.production
+
+# Ignore other non-frontend files
+deployment/
+docs/
+tests/
+uploads/
+ml-model/
+database/
+railway-deploy/
+.railway/
+*.md
+!frontend/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+
+# Logs
+*.log
+logs/
