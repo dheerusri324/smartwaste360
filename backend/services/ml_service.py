@@ -44,11 +44,11 @@ class MLService:
         # If model is not available, return default classification
         if not self.model:
             return {
-                'predicted_class': waste_type or 'plastic',
+                'predicted_category': waste_type or 'plastic',
                 'confidence': 0.5,
-                'is_recyclable': True,
-                'estimated_value': float(weight) * 0.1 if weight else 0.0,
-                'method': 'fallback'
+                'recyclable': True,
+                'waste_type': waste_type,
+                'impact': { 'co2_saved_kg': 0.0 }
             }
             
         try:
@@ -78,6 +78,8 @@ class MLService:
         except Exception as e:
             print(f"ERROR during Gemini API call: {e}")
             print("Falling back to default classification...")
+            import traceback
+            traceback.print_exc()
             
             # Fallback to a default classification
             return {

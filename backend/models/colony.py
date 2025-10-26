@@ -278,7 +278,7 @@ class Colony:
 
     @staticmethod
     def get_colonies_ready_for_collection_by_type(waste_types=None, collector_id=None):
-        """Get colonies ready for collection, optionally filtered by waste types."""
+        """Get colonies ready for collection, excluding those with scheduled bookings."""
         base_sql = """
             SELECT c.*, 
                    c.current_plastic_kg, c.current_paper_kg, c.current_metal_kg, 
@@ -295,12 +295,14 @@ class Colony:
                    GREATEST(c.current_plastic_kg, c.current_paper_kg, c.current_metal_kg, 
                            c.current_glass_kg, c.current_textile_kg) as max_waste_kg
             FROM colonies c
-            WHERE c.current_plastic_kg >= 5 
+            LEFT JOIN collection_bookings cb ON c.colony_id = cb.colony_id AND cb.status = 'scheduled'
+            WHERE (c.current_plastic_kg >= 5 
                OR c.current_paper_kg >= 5 
                OR c.current_metal_kg >= 1 
                OR c.current_glass_kg >= 2 
                OR c.current_textile_kg >= 1 
-               OR c.current_dry_waste_kg >= 10
+               OR c.current_dry_waste_kg >= 10)
+            AND cb.booking_id IS NULL
         """
         
         # Add waste type filtering if collector has preferences
@@ -359,6 +361,7 @@ class Colony:
                            )
                        )) AS distance
                 FROM colonies c
+                LEFT JOIN collection_bookings cb ON c.colony_id = cb.colony_id AND cb.status = 'scheduled'
                 WHERE c.latitude IS NOT NULL AND c.longitude IS NOT NULL
                   AND (c.current_plastic_kg >= 5 
                        OR c.current_paper_kg >= 5 
@@ -366,6 +369,7 @@ class Colony:
                        OR c.current_glass_kg >= 2 
                        OR c.current_textile_kg >= 1 
                        OR c.current_dry_waste_kg >= 10)
+                  AND cb.booking_id IS NULL
             ) AS ready_colonies_with_distance
             WHERE distance <= %s
         """

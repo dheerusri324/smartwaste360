@@ -211,16 +211,20 @@ const CollectionPointsMap = ({ filters = {}, onPointSelect }) => {
                       </div>
                     </div>
 
-                    {/* Capacity */}
+                    {/* Collection Priority */}
                     <div className="mb-2">
                       <p className="text-xs text-gray-600">
-                        Capacity: {parseFloat(point.current_capacity_kg || 0).toFixed(1)} / {parseFloat(point.max_capacity_kg || 0).toFixed(1)} kg
+                        Priority: {point.waste_types && point.waste_types.length >= 3 ? 'High' : 
+                                  point.waste_types && point.waste_types.length >= 2 ? 'Medium' : 'Low'}
                       </p>
                       <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
                         <div
-                          className="bg-emerald-600 h-1.5 rounded-full"
+                          className={`h-1.5 rounded-full ${
+                            point.waste_types && point.waste_types.length >= 3 ? 'bg-red-500' :
+                            point.waste_types && point.waste_types.length >= 2 ? 'bg-yellow-500' : 'bg-emerald-600'
+                          }`}
                           style={{
-                            width: `${Math.min(100, (point.current_capacity_kg / point.max_capacity_kg) * 100)}%`
+                            width: `${point.waste_types ? Math.min(100, (point.waste_types.length / 5) * 100) : 20}%`
                           }}
                         ></div>
                       </div>

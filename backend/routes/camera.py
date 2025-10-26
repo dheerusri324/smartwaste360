@@ -45,6 +45,10 @@ def capture_image():
         
         filename = f"{uuid.uuid4()}.jpg"
         upload_folder = current_app.config['UPLOAD_FOLDER']
+        
+        # Ensure upload folder exists
+        os.makedirs(upload_folder, exist_ok=True)
+        
         filepath = os.path.join(upload_folder, filename)
         
         with open(filepath, 'wb') as f:
@@ -53,7 +57,7 @@ def capture_image():
         # 3. Call services with the user-provided weight
         result = ml_service.classify_waste(filepath, weight, waste_type)
         points_earned = points_service.calculate_points(result['predicted_category'], weight)
-        co2_saved = points_service.get_co2_savings(result['predicted_category'], weight)
+        co2_saved = points_service.get_co_2_savings(result['predicted_category'], weight)
         
         # 4. Log the complete data to the database
         log_id = WasteLog.create_waste_log(

@@ -2,17 +2,21 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { getCollectorLocation } from '../services/collector';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * Hook for managing collector location
  * Provides multiple location strategies for collectors
  */
 export const useCollectorLocation = () => {
+  const { user } = useAuth();
   const [location, setLocation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [locationMethod, setLocationMethod] = useState('saved'); // 'saved', 'current', 'all', 'custom'
   const [savedLocation, setSavedLocation] = useState(null);
+  
+  const isCollector = user?.role === 'collector';
 
   // Get current browser location
   const getCurrentLocation = () => {
@@ -76,6 +80,11 @@ export const useCollectorLocation = () => {
   };
 
   const loadSavedLocation = useCallback(async () => {
+    if (!isCollector) {
+      setLoading(false);
+      return;
+    }
+    
     try {
       setLoading(true);
       const response = await getCollectorLocation();
@@ -109,12 +118,16 @@ export const useCollectorLocation = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isCollector]);
 
   // Load saved location first, then try current location if no saved location
   useEffect(() => {
-    loadSavedLocation();
-  }, [loadSavedLocation]);
+    if (isCollector) {
+      loadSavedLocation();
+    } else {
+      setLoading(false);
+    }
+  }, [loadSavedLocation, isCollector]);
 
   return {
     location,

@@ -1,7 +1,7 @@
 // frontend/src/pages/CollectorSettings.jsx
 
 import React, { useState, useEffect } from 'react';
-import { getCollectorProfile, updateCollectorProfile } from '../services/collector';
+import { getCollectorProfile, updateCollectorProfile, updateCollectorLocation } from '../services/collector';
 import { MapPin, Save, Navigation, Globe, User, Truck } from 'lucide-react';
 
 const CollectorSettings = () => {
@@ -105,7 +105,7 @@ const CollectorSettings = () => {
         service_radius_km: parseFloat(location.service_radius_km)
       };
 
-      await updateCollectorProfile(locationData);
+      await updateCollectorLocation(locationData);
       setMessage('Location saved successfully!');
       
       // Reload profile to get updated data

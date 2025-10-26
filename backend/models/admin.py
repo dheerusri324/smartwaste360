@@ -74,7 +74,6 @@ class Admin:
                         (SELECT COUNT(*) FROM users WHERE is_active = TRUE) as total_users,
                         (SELECT COUNT(*) FROM collectors WHERE is_active = TRUE) as total_collectors,
                         (SELECT COUNT(*) FROM colonies) as total_colonies,
-                        (SELECT COUNT(*) FROM collection_points WHERE is_active = TRUE) as total_collection_points,
                         (SELECT COUNT(*) FROM waste_logs) as total_waste_classifications,
                         (SELECT COALESCE(SUM(weight_kg), 0) FROM waste_logs) as total_waste_processed,
                         (SELECT COALESCE(SUM(points_earned), 0) FROM waste_logs) as total_points_awarded,
@@ -97,7 +96,7 @@ class Admin:
                 
                 # Get top performing colonies
                 cursor.execute("""
-                    SELECT colony_name, total_points, total_users,
+                    SELECT c.colony_name, c.total_points, c.total_users,
                            COALESCE(SUM(wl.weight_kg), 0) as total_waste_generated
                     FROM colonies c
                     LEFT JOIN users u ON c.colony_id = u.colony_id

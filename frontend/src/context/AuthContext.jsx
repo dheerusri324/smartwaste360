@@ -76,11 +76,17 @@ export const AuthProvider = ({ children }) => {
   const adminLoginAction = async (credentials) => {
     console.log('🔍 Admin login attempt:', credentials);
     try {
-      const response = await api.post('/admin/login', credentials);
+      // Use the regular auth/login endpoint which handles admin users
+      const response = await api.post('/auth/login', {
+        identifier: credentials.email,
+        password: credentials.password
+      });
       console.log('✅ Admin login response:', response.data);
       if (response.data.access_token) {
         localStorage.setItem('token', response.data.access_token);
-        setUser({ ...response.data.admin, role: 'admin' });
+        // Check if response has admin or user data
+        const userData = response.data.admin || response.data.user;
+        setUser({ ...userData, role: 'admin' });
         navigate('/admin/dashboard');
       }
     } catch (error) {

@@ -10,22 +10,16 @@ class Collector:
         """Creates a new collector with a hashed password."""
         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         
-        # Generate collector_id
         with get_db() as db:
             if not db: raise ConnectionError("Database connection not available.")
             with db.cursor(cursor_factory=RealDictCursor) as cursor:
-                # Get the next collector number
-                cursor.execute("SELECT COUNT(*) as count FROM collectors")
-                count = cursor.fetchone()['count']
-                collector_id = f"COL{str(count + 1).zfill(3)}"
-                
-                # Insert the new collector
+                # Insert the new collector (let database auto-generate collector_id)
                 sql = """
-                    INSERT INTO collectors (collector_id, name, phone, email, password_hash, vehicle_number)
-                    VALUES (%s, %s, %s, %s, %s, %s) 
+                    INSERT INTO collectors (name, phone, email, password_hash, vehicle_number)
+                    VALUES (%s, %s, %s, %s, %s) 
                     RETURNING collector_id
                 """
-                params = (collector_id, name, phone, email, password_hash, vehicle_number)
+                params = (name, phone, email, password_hash, vehicle_number)
                 cursor.execute(sql, params)
                 new_collector = cursor.fetchone()
                 db.commit()
@@ -159,16 +153,39 @@ class Collector:
     def get_all_collectors():
         """Get all collectors for admin management"""
         sql = """
-            SELECT collector_id, name, phone, email, assigned_colonies, 
-                   vehicle_number, is_active, created_at
-            FROM collectors
-            ORDER BY created_at DESC
+            SELECT c.collector_id, c.name, c.phone, c.email, c.vehicle_number, 
+                   c.is_active, c.created_at, c.role, 
+                   COALESCE(c.total_weight_collected, 0) as total_weight_collected,
+                   c.waste_types_collected, c.bio, c.is_banned, c.ban_reason,
+                   c.latitude, c.longitude, c.city, c.state,
+                   COALESCE(cb.total_collections, 0) as total_collections
+            FROM collectors c
+            LEFT JOIN (
+                SELECT collector_id, COUNT(*) as total_collections
+                FROM collection_bookings 
+                WHERE status = 'completed'
+                GROUP BY collector_id
+            ) cb ON c.collector_id = cb.collector_id
+            ORDER BY c.created_at DESC
         """
         with get_db() as db:
             if not db: raise ConnectionError("Database connection not available.")
             with db.cursor(cursor_factory=RealDictCursor) as cursor:
                 cursor.execute(sql)
-                return cursor.fetchall()
+                collectors = cursor.fetchall()
+                
+                # Convert to list of dicts for JSON serialization
+                result = []
+                for collector in collectors:
+                    collector_dict = dict(collector)
+                    # Handle datetime serialization
+                    if collector_dict.get('created_at'):
+                        collector_dict['created_at'] = collector_dict['created_at'].isoformat()
+                    if collector_dict.get('banned_at'):
+                        collector_dict['banned_at'] = collector_dict['banned_at'].isoformat()
+                    result.append(collector_dict)
+                
+                return result
 
     @staticmethod
     def update_status(collector_id, is_active):

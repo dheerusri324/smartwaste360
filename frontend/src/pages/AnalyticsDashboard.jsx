@@ -264,14 +264,18 @@ const AnalyticsDashboard = () => {
                 <div className="flex items-center gap-3">
                   <Recycle className="h-5 w-5 text-emerald-600" />
                   <div>
-                    <p className="text-sm font-medium">{activity.collector_name}</p>
-                    <p className="text-xs text-gray-600">{activity.colony_name}</p>
+                    <p className="text-sm font-medium">{activity.colony_name}</p>
+                    <p className="text-xs text-gray-600">
+                      {activity.waste_types && activity.waste_types.length > 0 
+                        ? activity.waste_types.join(', ') 
+                        : 'Collection completed'}
+                    </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium">{formatWeight(activity.total_weight_collected)}</p>
+                  <p className="text-sm font-medium">{formatWeight(activity.weight_collected || activity.total_weight_collected || 0)}</p>
                   <p className="text-xs text-gray-500">
-                    {new Date(activity.completed_at).toLocaleTimeString()}
+                    {activity.time_ago || new Date(activity.completed_at).toLocaleTimeString()}
                   </p>
                 </div>
               </div>

@@ -2,23 +2,23 @@
 // Centralized configuration for the application
 
 const config = {
-  // API Configuration - HARDCODED to avoid localhost issues
-  API_BASE_URL: 'https://smartwaste360-backend.onrender.com/api',
-  BACKEND_URL: 'https://smartwaste360-backend.onrender.com',
+  // API Configuration - Use environment variables for flexibility
+  API_BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+  BACKEND_URL: process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000',
   
   // Environment
-  ENVIRONMENT: 'production',
+  ENVIRONMENT: process.env.REACT_APP_ENVIRONMENT || 'development',
   
   // Debug mode - always show config for now to debug
   DEBUG: true,
   
   // Force cache bust
-  VERSION: '2.0.1',
-  UPDATED: '2025-10-11'
+  VERSION: '2.1.0',
+  UPDATED: '2025-10-26'
 };
 
 // Always log configuration to debug the issue
-console.log('🔧 App Configuration (v2.0.1):', config);
+console.log('🔧 App Configuration (v2.1.0):', config);
 console.log('🔧 Environment Variables:', {
   REACT_APP_API_URL: process.env.REACT_APP_API_URL,
   REACT_APP_ENVIRONMENT: process.env.REACT_APP_ENVIRONMENT,
@@ -35,7 +35,7 @@ console.log('📱 Device Info:', {
 });
 
 // Force alert to confirm new build is loaded
-console.warn('🚀 NEW BUILD LOADED - API should use Render, not localhost!');
+console.warn('🚀 NEW BUILD LOADED - API URL: ' + config.API_BASE_URL);
 if (isMobile) {
   alert('MOBILE BUILD LOADED! API: ' + config.API_BASE_URL);
 }

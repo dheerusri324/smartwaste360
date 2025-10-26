@@ -347,3 +347,115 @@ class Analytics:
                     'recent_activity': [dict(activity) for activity in recent_activity],
                     'timestamp': datetime.now().isoformat()
                 }
+
+    @staticmethod
+    def get_collector_realtime_dashboard_data(collector_id):
+        """Get real-time dashboard data specific to a collector"""
+        with get_db() as db:
+            if not db: raise ConnectionError("Database connection not available.")
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Today's stats for this collector
+                cursor.execute("""
+                    SELECT 
+                        COUNT(*) as collections_today,
+                        COALESCE(SUM(total_weight_collected), 0) as weight_today,
+                        COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_today,
+                        COUNT(CASE WHEN status = 'scheduled' THEN 1 END) as scheduled_today
+                    FROM collection_bookings 
+                    WHERE collector_id = %s 
+                    AND DATE(created_at) = CURRENT_DATE
+                """, (collector_id,))
+                
+                today_stats = cursor.fetchone()
+                
+                # Collector's current status
+                cursor.execute("""
+                    SELECT 
+                        COUNT(CASE WHEN status = 'scheduled' THEN 1 END) as my_scheduled_collections,
+                        COUNT(CASE WHEN status = 'completed' AND DATE(completed_at) = CURRENT_DATE THEN 1 END) as completed_today
+                    FROM collection_bookings 
+                    WHERE collector_id = %s
+                """, (collector_id,))
+                
+                current_status = cursor.fetchone()
+                
+                # Ready colonies available to this collector (based on waste type preferences)
+                cursor.execute("""
+                    SELECT COUNT(*) as available_colonies
+                    FROM colonies c
+                    LEFT JOIN collection_bookings cb ON c.colony_id = cb.colony_id AND cb.status = 'scheduled'
+                    WHERE (c.current_plastic_kg >= 5 
+                       OR c.current_paper_kg >= 5 
+                       OR c.current_metal_kg >= 1 
+                       OR c.current_glass_kg >= 2 
+                       OR c.current_textile_kg >= 1)
+                    AND cb.booking_id IS NULL
+                """)
+                
+                available_colonies = cursor.fetchone()
+                
+                # Recent activity for this collector
+                cursor.execute("""
+                    SELECT 
+                        cb.booking_id,
+                        cb.completed_at,
+                        cb.total_weight_collected,
+                        cb.waste_types,
+                        cb.notes,
+                        col.colony_name,
+                        cb.booking_date,
+                        cb.time_slot
+                    FROM collection_bookings cb
+                    JOIN colonies col ON cb.colony_id = col.colony_id
+                    WHERE cb.collector_id = %s
+                    AND cb.status = 'completed'
+                    ORDER BY cb.completed_at DESC
+                    LIMIT 10
+                """, (collector_id,))
+                
+                recent_activity = cursor.fetchall()
+                
+                # Format recent activity for display
+                formatted_activity = []
+                for activity in recent_activity:
+                    # Calculate time ago
+                    import datetime as dt
+                    if activity['completed_at']:
+                        time_diff = datetime.now() - activity['completed_at'].replace(tzinfo=None)
+                        if time_diff.days > 0:
+                            time_ago = f"{time_diff.days} days ago"
+                        elif time_diff.seconds > 3600:
+                            time_ago = f"{time_diff.seconds // 3600} hours ago"
+                        else:
+                            time_ago = f"{time_diff.seconds // 60} minutes ago"
+                    else:
+                        time_ago = "Unknown"
+                    
+                    formatted_activity.append({
+                        'booking_id': activity['booking_id'],
+                        'colony_name': activity['colony_name'],
+                        'weight_collected': float(activity['total_weight_collected']) if activity['total_weight_collected'] else 0,
+                        'waste_types': activity['waste_types'] or [],
+                        'completed_at': activity['completed_at'].isoformat() if activity['completed_at'] else None,
+                        'time_ago': time_ago,
+                        'notes': activity['notes'] or 'No notes',
+                        'booking_date': activity['booking_date'].isoformat() if activity['booking_date'] else None,
+                        'time_slot': activity['time_slot']
+                    })
+                
+                return {
+                    'today_stats': {
+                        'collections': today_stats['collections_today'] if today_stats else 0,
+                        'weight_kg': float(today_stats['weight_today']) if today_stats else 0.0,
+                        'completed': today_stats['completed_today'] if today_stats else 0,
+                        'scheduled': today_stats['scheduled_today'] if today_stats else 0
+                    },
+                    'current_status': {
+                        'my_scheduled_collections': current_status['my_scheduled_collections'] if current_status else 0,
+                        'completed_today': current_status['completed_today'] if current_status else 0
+                    },
+                    'available_colonies_count': available_colonies['available_colonies'] if available_colonies else 0,
+                    'recent_activity': formatted_activity,
+                    'timestamp': datetime.now().isoformat(),
+                    'collector_id': collector_id
+                }

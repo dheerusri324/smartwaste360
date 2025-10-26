@@ -47,6 +47,12 @@ def classify_waste_route():
         file.save(filepath)
         
         result = ml_service.classify_waste(filepath, weight, 'dry')
+        
+        # Debug: Check if result has the expected structure
+        if 'predicted_category' not in result:
+            print(f"ERROR: ML service result missing 'predicted_category': {result}")
+            return jsonify({'error': f'ML service error: missing predicted_category in result: {result}'}), 500
+        
         points_earned = points_service.calculate_points(result['predicted_category'], weight)
         co2_saved = points_service.get_co_2_savings(result['predicted_category'], weight)
         

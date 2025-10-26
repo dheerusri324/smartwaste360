@@ -23,6 +23,44 @@ class Booking:
                 return booking_id
 
     @staticmethod
+    def get_booking_details(booking_id, collector_id):
+        """Get booking details including estimated materials and weight"""
+        sql = """
+            SELECT cb.*, c.colony_name, c.current_plastic_kg, c.current_paper_kg, 
+                   c.current_metal_kg, c.current_glass_kg, c.current_textile_kg,
+                   GREATEST(c.current_plastic_kg, c.current_paper_kg, c.current_metal_kg, 
+                           c.current_glass_kg, c.current_textile_kg) as estimated_weight
+            FROM collection_bookings cb
+            JOIN colonies c ON cb.colony_id = c.colony_id
+            WHERE cb.booking_id = %s AND cb.collector_id = %s AND cb.status = 'scheduled'
+        """
+        with get_db() as db:
+            if not db: raise ConnectionError("Database connection not available.")
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute(sql, (booking_id, collector_id))
+                booking = cursor.fetchone()
+                
+                if booking:
+                    # Determine which materials are available for collection
+                    scheduled_materials = []
+                    if booking['current_plastic_kg'] >= 5:
+                        scheduled_materials.append('plastic')
+                    if booking['current_paper_kg'] >= 5:
+                        scheduled_materials.append('paper')
+                    if booking['current_metal_kg'] >= 1:
+                        scheduled_materials.append('metal')
+                    if booking['current_glass_kg'] >= 2:
+                        scheduled_materials.append('glass')
+                    if booking['current_textile_kg'] >= 1:
+                        scheduled_materials.append('textile')
+                    
+                    booking_dict = dict(booking)
+                    booking_dict['scheduled_materials'] = scheduled_materials
+                    return booking_dict
+                
+                return None
+
+    @staticmethod
     def get_bookings_by_colony(colony_id, status=None):
         """Get bookings for a colony, optionally filtered by status"""
         sql = """

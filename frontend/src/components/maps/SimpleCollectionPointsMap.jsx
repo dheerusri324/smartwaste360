@@ -1,19 +1,32 @@
 // frontend/src/components/maps/SimpleCollectionPointsMap.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { getAllCollectionPoints } from '../../services/collector';
+import { getUserCollectionPoints } from '../../services/user';
+import { useAuth } from '../../context/AuthContext';
 import { MapPin, Package, Navigation, Clock } from 'lucide-react';
 
 const SimpleCollectionPointsMap = ({ filters = {} }) => {
+  const { user } = useAuth();
   const [collectionPoints, setCollectionPoints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  const isCollector = user?.role === 'collector';
 
   const loadCollectionPoints = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
       console.log('Loading collection points with filters:', filters);
-      const response = await getAllCollectionPoints(filters);
+      console.log('User role:', user?.role);
+      
+      let response;
+      if (isCollector) {
+        response = await getAllCollectionPoints(filters);
+      } else {
+        response = await getUserCollectionPoints(filters);
+      }
+      
       console.log('Collection points response:', response);
       setCollectionPoints(response.collection_points || []);
     } catch (err) {
@@ -22,7 +35,7 @@ const SimpleCollectionPointsMap = ({ filters = {} }) => {
     } finally {
       setLoading(false);
     }
-  }, [filters]);
+  }, [filters, isCollector, user?.role]);
 
   useEffect(() => {
     loadCollectionPoints();
@@ -151,17 +164,23 @@ const SimpleCollectionPointsMap = ({ filters = {} }) => {
                   </div>
                 </div>
 
-                {/* Capacity */}
+                {/* Collection Priority */}
                 <div className="mb-2">
                   <div className="flex justify-between text-xs text-gray-600 mb-1">
-                    <span>Capacity:</span>
-                    <span>{parseFloat(point.current_capacity_kg || 0).toFixed(1)} / {parseFloat(point.max_capacity_kg || 0).toFixed(1)} kg</span>
+                    <span>Priority:</span>
+                    <span className="font-medium">
+                      {point.waste_types && point.waste_types.length >= 3 ? 'High' : 
+                       point.waste_types && point.waste_types.length >= 2 ? 'Medium' : 'Low'}
+                    </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
-                      className="bg-emerald-600 h-2 rounded-full"
+                      className={`h-2 rounded-full ${
+                        point.waste_types && point.waste_types.length >= 3 ? 'bg-red-500' :
+                        point.waste_types && point.waste_types.length >= 2 ? 'bg-yellow-500' : 'bg-emerald-600'
+                      }`}
                       style={{
-                        width: `${Math.min(100, (point.current_capacity_kg / point.max_capacity_kg) * 100)}%`
+                        width: `${point.waste_types ? Math.min(100, (point.waste_types.length / 5) * 100) : 20}%`
                       }}
                     ></div>
                   </div>

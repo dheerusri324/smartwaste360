@@ -89,13 +89,21 @@ def get_waste_trends():
 @bp.route('/dashboard/realtime', methods=['GET'])
 @jwt_required()
 def get_realtime_dashboard():
-    """Get real-time dashboard data"""
+    """Get real-time dashboard data (collector-specific or admin global)"""
     try:
         claims = get_jwt()
         if claims.get('role') not in ['admin', 'collector']:
             return jsonify({"msg": "Access denied: Admin or collector token required"}), 403
         
-        dashboard_data = Analytics.get_real_time_dashboard_data()
+        user_id = get_jwt_identity()
+        user_role = claims.get('role')
+        
+        if user_role == 'collector':
+            # Get collector-specific dashboard data
+            dashboard_data = Analytics.get_collector_realtime_dashboard_data(user_id)
+        else:
+            # Get global dashboard data for admin
+            dashboard_data = Analytics.get_real_time_dashboard_data()
         
         return jsonify({
             'success': True,

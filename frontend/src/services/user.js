@@ -47,3 +47,30 @@ export const updateUserProfile = async (profileData) => {
   const response = await api.put('/auth/profile', profileData);
   return response.data;
 };
+/**
+
+ * Get collection points for users (public endpoint)
+ */
+export const getUserCollectionPoints = async (filters = {}) => {
+  let url = '/collection-points/';
+  const params = new URLSearchParams();
+  
+  console.log('[DEBUG] getUserCollectionPoints called with filters:', filters);
+  
+  if (filters.waste_types && filters.waste_types.length > 0) {
+    filters.waste_types.forEach(type => params.append('waste_types', type));
+  }
+  if (filters.latitude && filters.longitude) {
+    params.append('lat', filters.latitude);
+    params.append('lng', filters.longitude);
+    if (filters.radius) params.append('radius', filters.radius);
+  }
+  
+  if (params.toString()) {
+    url += '?' + params.toString();
+  }
+  
+  console.log('[DEBUG] Final collection points URL:', url);
+  const response = await api.get(url);
+  return response.data;
+};

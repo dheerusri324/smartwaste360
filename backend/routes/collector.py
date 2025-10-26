@@ -291,6 +291,13 @@ def complete_collection():
                     """
                     update_values.append(colony_id)
                     cursor.execute(update_sql, update_values)
+                    
+                # Recalculate total dry waste after collection
+                cursor.execute("""
+                    UPDATE colonies 
+                    SET current_dry_waste_kg = current_plastic_kg + current_paper_kg + current_metal_kg + current_glass_kg + current_textile_kg
+                    WHERE colony_id = %s
+                """, (colony_id,))
                 
                 db.commit()
                 

@@ -115,21 +115,29 @@ const CollectionPointsModal = ({ colony, isOpen, onClose }) => {
                     </div>
 
                     <div>
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Capacity</h4>
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Collection Status</h4>
                       <div className="space-y-1">
                         <div className="flex justify-between text-sm">
-                          <span>Current:</span>
-                          <span className="font-medium">{parseFloat(point.current_capacity_kg || 0).toFixed(1)} kg</span>
+                          <span>Status:</span>
+                          <span className="font-medium text-emerald-600">
+                            {point.waste_types && point.waste_types.length > 0 ? 'Ready for Collection' : 'No Waste Available'}
+                          </span>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span>Maximum:</span>
-                          <span className="font-medium">{parseFloat(point.max_capacity_kg || 0).toFixed(1)} kg</span>
+                          <span>Priority:</span>
+                          <span className="font-medium">
+                            {point.waste_types && point.waste_types.length >= 3 ? 'High' : 
+                             point.waste_types && point.waste_types.length >= 2 ? 'Medium' : 'Low'}
+                          </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div
-                            className="bg-emerald-600 h-2 rounded-full"
+                            className={`h-2 rounded-full ${
+                              point.waste_types && point.waste_types.length >= 3 ? 'bg-red-500' :
+                              point.waste_types && point.waste_types.length >= 2 ? 'bg-yellow-500' : 'bg-emerald-600'
+                            }`}
                             style={{
-                              width: `${Math.min(100, (point.current_capacity_kg / point.max_capacity_kg) * 100)}%`
+                              width: `${point.waste_types ? Math.min(100, (point.waste_types.length / 5) * 100) : 10}%`
                             }}
                           ></div>
                         </div>

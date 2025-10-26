@@ -270,6 +270,22 @@ def create_colony():
         traceback.print_exc()
         return jsonify({'error': 'An internal server error occurred'}), 500
 
+@bp.route('/collection-points', methods=['GET'])
+@jwt_required()
+def get_all_collection_points():
+    """Get all collection points for admin management"""
+    try:
+        claims = get_jwt()
+        if claims.get('role') != 'admin':
+            return jsonify({"msg": "Access denied: Admin access required"}), 403
+
+        collection_points = CollectionPoint.get_all_active()
+        return jsonify({'collection_points': collection_points}), 200
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': 'An internal server error occurred'}), 500
+
 @bp.route('/collection-points', methods=['POST'])
 @jwt_required()
 def create_collection_point():
@@ -280,17 +296,39 @@ def create_collection_point():
             return jsonify({"msg": "Access denied: Admin access required"}), 403
 
         data = request.get_json()
-        required_fields = ['colony_id', 'point_name', 'waste_types_accepted']
+        required_fields = ['point_name', 'waste_types_accepted', 'latitude', 'longitude']
         
         if not all(field in data for field in required_fields):
-            return jsonify({'error': 'Missing required fields'}), 400
+            return jsonify({'error': 'Missing required fields: point_name, waste_types_accepted, latitude, longitude'}), 400
+
+        # Auto-assign colony based on location
+        latitude = data.get('latitude')
+        longitude = data.get('longitude')
+        colony_id = None
+        
+        if latitude and longitude:
+            # Find nearest colony within 10km radius
+            nearby_colonies = Colony.get_nearby_colonies(latitude, longitude, radius_km=10)
+            if nearby_colonies:
+                colony_id = nearby_colonies[0]['colony_id']
+                print(f"[INFO] Auto-assigned collection point to colony: {nearby_colonies[0]['colony_name']}")
+            else:
+                # If no nearby colony found, create a default one or use the first available
+                all_colonies = Colony.get_all()
+                if all_colonies:
+                    colony_id = all_colonies[0]['colony_id']
+                    print(f"[INFO] No nearby colony found, assigned to default: {all_colonies[0]['colony_name']}")
+                else:
+                    return jsonify({'error': 'No colonies available. Please create a colony first.'}), 400
+        else:
+            return jsonify({'error': 'Latitude and longitude are required for auto-assignment'}), 400
 
         point_id = CollectionPoint.create(
-            colony_id=data['colony_id'],
+            colony_id=colony_id,
             point_name=data['point_name'],
             location_description=data.get('location_description', ''),
-            latitude=data.get('latitude'),
-            longitude=data.get('longitude'),
+            latitude=latitude,
+            longitude=longitude,
             waste_types_accepted=data['waste_types_accepted'],
             max_capacity_kg=data.get('max_capacity_kg', 100.00)
         )

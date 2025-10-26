@@ -49,7 +49,7 @@ const Maps = () => {
   // Get user's registered location (for regular users, not collectors)
   useEffect(() => {
     const loadUserLocation = async () => {
-      if (user && !isCollector) {
+      if (user && !isCollector && user.role !== 'admin') {
         try {
           setLocationLoading(true);
           const location = await getUserLocation();
@@ -65,6 +65,15 @@ const Maps = () => {
         } finally {
           setLocationLoading(false);
         }
+      } else if (user && user.role === 'admin') {
+        // For admin users, use a default location (Hyderabad city center)
+        setUserLocation({
+          lat: 17.385044,
+          lng: 78.486671,
+          colony_name: 'Admin View',
+          colony_id: null
+        });
+        console.log('Admin user - using default location');
       }
     };
 
@@ -79,14 +88,22 @@ const Maps = () => {
       if (isCollector) {
         // Collector logic: ready colonies with optional location filter
         console.log('Fetching ready colonies for collector, location:', effectiveLocation);
+        console.log('Location method:', collectorLocation.locationMethod);
         
-        // Add radius parameter for collectors
-        const locationWithRadius = effectiveLocation ? {
-          ...effectiveLocation,
-          radius: 500 // 500km radius for collectors
-        } : null;
-        
-        data = await getReadyColonies(locationWithRadius);
+        // Check if "Show All" is selected (locationMethod === 'all')
+        if (collectorLocation.locationMethod === 'all') {
+          // Show all colonies without location filter
+          console.log('Showing all colonies (no location filter)');
+          data = await getReadyColonies(null);
+        } else {
+          // Add radius parameter for collectors with location
+          const locationWithRadius = effectiveLocation ? {
+            ...effectiveLocation,
+            radius: 500 // 500km radius for collectors
+          } : null;
+          
+          data = await getReadyColonies(locationWithRadius);
+        }
         console.log('Ready colonies data:', data);
       } else if (userLocation) {
         // User logic: nearby colonies within 25km of registered location
@@ -94,7 +111,7 @@ const Maps = () => {
         data = await getNearbyColonies(userLocation.lat, userLocation.lng, 25);
         console.log('Nearby colonies data:', data);
       } else {
-        // No location available
+        // No location available for users
         setColonies([]);
         setLoadingColonies(false);
         return;
@@ -111,7 +128,7 @@ const Maps = () => {
     } finally {
       setLoadingColonies(false);
     }
-  }, [userLocation, effectiveLocation, isCollector]);
+  }, [userLocation, effectiveLocation, isCollector, collectorLocation.locationMethod]);
 
   useEffect(() => {
     fetchMapData();
@@ -125,11 +142,21 @@ const Maps = () => {
 
   const getCollectionPointsFilters = () => {
     const filters = {};
-    if (effectiveLocation) {
+    
+    // For collectors, use their location logic
+    if (isCollector && effectiveLocation) {
       filters.latitude = effectiveLocation.lat;
       filters.longitude = effectiveLocation.lng;
-      filters.radius = 25; // 25km radius as requested
+      filters.radius = 25;
     }
+    // For regular users, use their location if available, otherwise show all
+    else if (!isCollector && userLocation) {
+      filters.latitude = userLocation.lat;
+      filters.longitude = userLocation.lng;
+      filters.radius = 25;
+    }
+    // If no location available, return empty filters to show all collection points
+    
     return filters;
   };
 
@@ -229,7 +256,7 @@ const Maps = () => {
             </div>
           )}
           
-          {!effectiveLocation && !collectorLocation.loading && (
+          {!effectiveLocation && !collectorLocation.loading && collectorLocation.locationMethod !== 'all' && (
             <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm">
               <p className="text-yellow-700">
                 No location set. <a href="/collector/settings" className="underline font-medium">Add your location in settings</a> for better pickup recommendations.
