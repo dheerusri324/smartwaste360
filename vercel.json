@@ -10,24 +10,29 @@
     {
       "src": "/static/(.*)",
       "headers": {
-        "cache-control": "s-maxage=31536000,immutable"
+        "cache-control": "no-cache, no-store, must-revalidate"
       }
     },
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/index.html",
+      "headers": {
+        "cache-control": "no-cache, no-store, must-revalidate"
+      }
     }
   ],
   "env": {
     "REACT_APP_API_URL": "https://smartwaste360-backend.onrender.com/api",
     "REACT_APP_BACKEND_URL": "https://smartwaste360-backend.onrender.com",
-    "REACT_APP_ENVIRONMENT": "production"
+    "REACT_APP_ENVIRONMENT": "production",
+    "REACT_APP_BUILD_ID": "PRODUCTION-LAUNCH-v3.0.0"
   },
   "build": {
     "env": {
       "REACT_APP_API_URL": "https://smartwaste360-backend.onrender.com/api",
       "REACT_APP_BACKEND_URL": "https://smartwaste360-backend.onrender.com",
-      "REACT_APP_ENVIRONMENT": "production"
+      "REACT_APP_ENVIRONMENT": "production",
+      "REACT_APP_BUILD_ID": "PRODUCTION-LAUNCH-v3.0.0"
     }
   }
 }

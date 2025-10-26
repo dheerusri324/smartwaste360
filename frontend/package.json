@@ -1,6 +1,6 @@
 {
   "name": "smartwaste360-frontend",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "Frontend for SmartWaste360 - Smart Waste Management System",
   "private": true,
   "dependencies": {

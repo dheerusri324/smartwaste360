@@ -13,8 +13,8 @@ const config = {
   DEBUG: true,
   
   // Force cache bust
-  VERSION: '2.1.0',
-  UPDATED: '2025-10-26'
+  VERSION: '3.0.0',
+  UPDATED: '2025-10-26-PRODUCTION-LAUNCH'
 };
 
 // Always log configuration to debug the issue
@@ -35,9 +35,10 @@ console.log('📱 Device Info:', {
 });
 
 // Force alert to confirm new build is loaded
-console.warn('🚀 NEW BUILD LOADED - API URL: ' + config.API_BASE_URL);
+console.warn('🚀 PRODUCTION v3.0.0 LOADED - API URL: ' + config.API_BASE_URL);
+console.warn('🎯 LAUNCH VERSION: All features implemented!');
 if (isMobile) {
-  alert('MOBILE BUILD LOADED! API: ' + config.API_BASE_URL);
+  alert('PRODUCTION v3.0.0 LOADED! API: ' + config.API_BASE_URL);
 }
 
 export default config;
