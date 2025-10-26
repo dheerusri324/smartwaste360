@@ -244,27 +244,16 @@ def complete_collection():
         waste_types = data['waste_types']  # Dict with waste type amounts
         notes = data.get('notes', '')
         
-        # Validate colony exists
-        from models.colony import Colony
-        colony = Colony.get_by_id(colony_id)
-        if not colony:
-            return jsonify({'error': 'Colony not found'}), 404
-        
-        # Create collection record
+        # Simplified approach - just update colony waste amounts
         from config.database import get_db
         from psycopg2.extras import RealDictCursor
         
         with get_db() as db:
             with db.cursor(cursor_factory=RealDictCursor) as cursor:
-                # Insert collection record
-                cursor.execute("""
-                    INSERT INTO collection_bookings 
-                    (colony_id, collector_id, booking_date, time_slot, status, total_weight, notes, waste_types_collected)
-                    VALUES (%s, %s, CURRENT_DATE, 'completed', 'completed', %s, %s, %s)
-                    RETURNING booking_id
-                """, (colony_id, collector_id, total_weight, notes, str(waste_types)))
-                
-                booking_id = cursor.fetchone()['booking_id']
+                # Check if colony exists
+                cursor.execute("SELECT colony_id FROM colonies WHERE colony_id = %s", (colony_id,))
+                if not cursor.fetchone():
+                    return jsonify({'error': 'Colony not found'}), 404
                 
                 # Update colony waste amounts (reduce by collected amounts)
                 update_fields = []
@@ -303,22 +292,16 @@ def complete_collection():
                     update_values.append(colony_id)
                     cursor.execute(update_sql, update_values)
                 
-                # Update collector's total weight collected
-                cursor.execute("""
-                    UPDATE collectors 
-                    SET total_weight_collected = COALESCE(total_weight_collected, 0) + %s
-                    WHERE collector_id = %s
-                """, (total_weight, collector_id))
-                
                 db.commit()
                 
                 return jsonify({
                     'message': 'Collection completed successfully',
-                    'booking_id': booking_id,
                     'total_weight': total_weight,
-                    'colony_updated': True
+                    'colony_updated': True,
+                    'waste_collected': waste_types
                 }), 200
                 
     except Exception as e:
+        import traceback
         traceback.print_exc()
-        return jsonify({'error': 'An internal server error occurred'}), 500
+        return jsonify({'error': f'Collection completion failed: {str(e)}'}), 500
