@@ -41,12 +41,18 @@ def classify_waste_route():
             return jsonify({'error': 'Invalid or no file selected'}), 400
         
         weight = float(request.form.get('weight', 1.0))
+        waste_type = request.form.get('waste_type', 'dry')  # Get from form, default to 'dry'
         
         filename = f"{uuid.uuid4()}_{secure_filename(file.filename)}"
         filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
         
-        result = ml_service.classify_waste(filepath, weight, 'dry')
+        # Debug logging
+        print(f"[DEBUG] Classifying waste: weight={weight}, waste_type={waste_type}")
+        
+        result = ml_service.classify_waste(filepath, weight, waste_type)
+        
+        print(f"[DEBUG] ML service result: {result}")
         
         # Debug: Check if result has the expected structure
         if 'predicted_category' not in result:
@@ -58,7 +64,7 @@ def classify_waste_route():
         
         WasteLog.create_waste_log(
             user_id, filepath, result['predicted_category'], result['confidence'],
-            weight, 'dry', points_earned, None, None,
+            weight, waste_type, points_earned, None, None,
             result['recyclable'], co2_saved
         )
         
