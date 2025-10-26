@@ -77,11 +77,12 @@ def home():
         'message': 'SmartWaste360 API is alive! PRODUCTION LAUNCH v3.0.0',
         'version': '3.0.0',
         'status': 'production',
-        'deployment': 'admin-collectors-fix-deployed',
+        'deployment': 'URGENT-CORS-AND-COLLECTORS-FIX',
         'timestamp': '2025-10-26',
         'cors_enabled': True,
-        'cors_method': 'after_request_headers',
-        'admin_collectors_fix': 'deployed'
+        'cors_method': 'allow_all_origins',
+        'admin_collectors_fix': 'deployed',
+        'render_wake_up': 'PLEASE_DEPLOY_NOW'
     })
 
 @app.route('/health')
