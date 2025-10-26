@@ -28,7 +28,12 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 # 👇 2. INITIALIZE CORS AND ALLOW YOUR REACT APP'S ORIGIN 👇
 # Use Flask-CORS with explicit configuration
 CORS(app, 
-     origins=['*'],
+     origins=[
+         '*',  # Allow all origins for development
+         'https://smartwaste360-frontend-m0nsfg3ki-121012dheeraj-8860s-projects.vercel.app',  # Your actual Vercel URL
+         'https://smartwaste360-backend.onrender.com',  # Your Render backend
+         'http://localhost:3000'  # Local development
+     ],
      allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
      supports_credentials=False)
