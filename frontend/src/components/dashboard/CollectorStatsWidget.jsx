@@ -15,7 +15,18 @@ import {
 import { Link } from 'react-router-dom';
 
 const CollectorStatsWidget = () => {
-  const [summary, setSummary] = useState(null);
+  const [summary, setSummary] = useState({
+    current_period: {
+      collections: 0,
+      weight: 0,
+      rating: 0,
+      pending: 0
+    },
+    growth_metrics: {
+      collection_growth_percent: 0,
+      weight_growth_percent: 0
+    }
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -90,36 +101,36 @@ const CollectorStatsWidget = () => {
         {/* Collections */}
         <div className="text-center p-3 bg-gray-50 rounded-lg">
           <Package className="h-6 w-6 text-emerald-600 mx-auto mb-2" />
-          <p className="text-xl font-bold text-gray-900">{summary.current_period.collections}</p>
+          <p className="text-xl font-bold text-gray-900">{summary?.current_period?.collections || 0}</p>
           <p className="text-xs text-gray-600">Collections (7d)</p>
-          {formatGrowth(summary.growth_metrics.collection_growth_percent)}
+          {formatGrowth(summary?.growth_metrics?.collection_growth_percent || 0)}
         </div>
 
         {/* Weight */}
         <div className="text-center p-3 bg-gray-50 rounded-lg">
           <Scale className="h-6 w-6 text-emerald-600 mx-auto mb-2" />
-          <p className="text-xl font-bold text-gray-900">{formatWeight(summary.current_period.weight_collected)}</p>
+          <p className="text-xl font-bold text-gray-900">{formatWeight(summary?.current_period?.weight_collected || 0)}</p>
           <p className="text-xs text-gray-600">Weight Collected</p>
-          {formatGrowth(summary.growth_metrics.weight_growth_percent)}
+          {formatGrowth(summary?.growth_metrics?.weight_growth_percent || 0)}
         </div>
 
         {/* Efficiency */}
         <div className="text-center p-3 bg-gray-50 rounded-lg">
           <Zap className="h-6 w-6 text-emerald-600 mx-auto mb-2" />
-          <p className="text-xl font-bold text-gray-900">{summary.current_period.efficiency_score}</p>
+          <p className="text-xl font-bold text-gray-900">{summary?.current_period?.efficiency_score || 0}</p>
           <p className="text-xs text-gray-600">Efficiency Score</p>
         </div>
 
         {/* Active Days */}
         <div className="text-center p-3 bg-gray-50 rounded-lg">
           <Calendar className="h-6 w-6 text-emerald-600 mx-auto mb-2" />
-          <p className="text-xl font-bold text-gray-900">{summary.current_period.active_days}</p>
+          <p className="text-xl font-bold text-gray-900">{summary?.current_period?.active_days || 0}</p>
           <p className="text-xs text-gray-600">Active Days</p>
         </div>
       </div>
 
       {/* Recent Performance Trend */}
-      {summary.performance_trends && summary.performance_trends.length > 0 && (
+      {summary?.performance_trends && summary.performance_trends.length > 0 && (
         <div className="mt-4 pt-4 border-t">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Recent Activity</h4>
           <div className="space-y-1">
@@ -141,7 +152,7 @@ const CollectorStatsWidget = () => {
       )}
 
       {/* Waste Specialization */}
-      {summary.waste_specialization && summary.waste_specialization.length > 0 && (
+      {summary?.waste_specialization && summary.waste_specialization.length > 0 && (
         <div className="mt-4 pt-4 border-t">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Top Waste Types</h4>
           <div className="flex gap-2">
