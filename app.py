@@ -52,7 +52,7 @@ def create_directories():
 create_directories()
 
 # --- IMPORT & REGISTER BLUEPRINTS (ROUTES) ---
-from routes import auth, waste, booking, leaderboard, camera, collector, transaction, health, colony, collection_points, admin, analytics
+from routes import auth, waste, booking, leaderboard, camera, collector, transaction, health, colony, collection_points, admin, analytics, database_debug
 
 app.register_blueprint(auth.bp, url_prefix='/api/auth')
 app.register_blueprint(waste.bp, url_prefix='/api/waste')
@@ -66,6 +66,7 @@ app.register_blueprint(collection_points.bp, url_prefix='/api/collection-points'
 app.register_blueprint(admin.bp, url_prefix='/api/admin')
 app.register_blueprint(analytics.bp, url_prefix='/api/analytics')
 app.register_blueprint(health.bp, url_prefix='/health')
+app.register_blueprint(database_debug.bp, url_prefix='/api/database-debug')
 
 # Advanced features temporarily disabled for debugging
 # app.register_blueprint(advanced_features.bp, url_prefix='/api/advanced')
@@ -74,15 +75,18 @@ app.register_blueprint(health.bp, url_prefix='/health')
 @app.route('/')
 def home():
     return jsonify({
-        'message': 'SmartWaste360 API is alive! PRODUCTION LAUNCH v3.0.0',
-        'version': '3.0.0',
+        'message': 'SmartWaste360 API is alive! DATABASE DIAGNOSTIC v4.0.0',
+        'version': '4.0.0',
         'status': 'production',
-        'deployment': 'URGENT-CORS-AND-COLLECTORS-FIX',
-        'timestamp': '2025-10-26',
+        'deployment': 'DATABASE-SYNC-AND-SCHEMA-FIX',
+        'timestamp': '2025-10-27',
         'cors_enabled': True,
-        'cors_method': 'allow_all_origins',
-        'admin_collectors_fix': 'deployed',
-        'render_wake_up': 'PLEASE_DEPLOY_NOW'
+        'diagnostic_endpoints': {
+            'full_diagnostic': '/api/database-debug/full-diagnostic',
+            'fix_schema': '/api/database-debug/fix-missing-columns',
+            'clear_old_data': '/api/database-debug/clear-old-data'
+        },
+        'render_wake_up': 'DATABASE_DIAGNOSTIC_READY'
     })
 
 @app.route('/health')
