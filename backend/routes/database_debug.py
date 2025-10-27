@@ -318,32 +318,32 @@ def fix_missing_columns():
 
 @bp.route('/clear-old-data', methods=['POST'])
 def clear_old_data():
-    """Clear data older than 20 days (for testing fresh deployment)"""
+    """Clear data older than 7 days (for testing fresh deployment)"""
     try:
         with get_db() as db:
             with db.cursor() as cursor:
                 deleted_counts = {}
                 
-                # Delete old bookings
+                # Delete old bookings (>7 days)
                 cursor.execute("""
                     DELETE FROM collection_bookings
-                    WHERE created_at < NOW() - INTERVAL '20 days'
+                    WHERE created_at < NOW() - INTERVAL '7 days'
                     RETURNING booking_id
                 """)
                 deleted_counts['collection_bookings'] = len(cursor.fetchall())
                 
-                # Delete old waste logs
+                # Delete old waste logs (>7 days)
                 cursor.execute("""
                     DELETE FROM waste_logs
-                    WHERE created_at < NOW() - INTERVAL '20 days'
+                    WHERE created_at < NOW() - INTERVAL '7 days'
                     RETURNING log_id
                 """)
                 deleted_counts['waste_logs'] = len(cursor.fetchall())
                 
-                # Delete old transactions
+                # Delete old transactions (>7 days)
                 cursor.execute("""
                     DELETE FROM user_transactions
-                    WHERE created_at < NOW() - INTERVAL '20 days'
+                    WHERE created_at < NOW() - INTERVAL '7 days'
                     RETURNING transaction_id
                 """)
                 deleted_counts['user_transactions'] = len(cursor.fetchall())
@@ -352,7 +352,52 @@ def clear_old_data():
                 
                 return jsonify({
                     'status': 'success',
-                    'message': 'Old data cleared successfully',
+                    'message': 'Old data cleared successfully (>7 days)',
+                    'deleted_records': deleted_counts,
+                    'total_deleted': sum(deleted_counts.values())
+                }), 200
+                
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        }), 500
+
+@bp.route('/clear-all-bookings', methods=['POST'])
+def clear_all_bookings():
+    """Clear ALL bookings (use with caution!)"""
+    try:
+        with get_db() as db:
+            with db.cursor() as cursor:
+                deleted_counts = {}
+                
+                # Delete ALL bookings
+                cursor.execute("""
+                    DELETE FROM collection_bookings
+                    RETURNING booking_id
+                """)
+                deleted_counts['collection_bookings'] = len(cursor.fetchall())
+                
+                # Delete ALL waste logs
+                cursor.execute("""
+                    DELETE FROM waste_logs
+                    RETURNING log_id
+                """)
+                deleted_counts['waste_logs'] = len(cursor.fetchall())
+                
+                # Delete ALL transactions
+                cursor.execute("""
+                    DELETE FROM user_transactions
+                    RETURNING transaction_id
+                """)
+                deleted_counts['user_transactions'] = len(cursor.fetchall())
+                
+                db.commit()
+                
+                return jsonify({
+                    'status': 'success',
+                    'message': 'ALL data cleared successfully',
                     'deleted_records': deleted_counts,
                     'total_deleted': sum(deleted_counts.values())
                 }), 200
