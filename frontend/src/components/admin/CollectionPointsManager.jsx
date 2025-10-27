@@ -21,7 +21,7 @@ const CollectionPointsManager = () => {
   const [error, setError] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
-  const [editingPoint] = useState(null);
+  const [editingPoint, setEditingPoint] = useState(null);
   const [mapCenter] = useState([17.385044, 78.486671]); // Hyderabad coordinates
 
   const [formData, setFormData] = useState({
