@@ -160,7 +160,7 @@ def seed_collection_points():
                     # Create multiple collection points per colony
                     collection_points = [
                         {
-                            'name': f"{colony['colony_name']} - Main Gate',
+                            'name': f"{colony['colony_name']} - Main Gate",
                             'description': 'Collection point at main entrance',
                             'waste_types': ['plastic', 'paper', 'metal', 'glass']
                         },
