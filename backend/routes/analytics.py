@@ -162,14 +162,24 @@ def get_collector_summary():
 def get_realtime_dashboard():
     """Get real-time dashboard data"""
     try:
-        # Return simple fallback data
+        # Return simple fallback data with correct structure
         return jsonify({
             'success': True,
             'data': {
                 'active_collections': 0,
                 'total_weight_today': 0.0,
                 'active_collectors': 0,
-                'pending_requests': 0
+                'pending_requests': 0,
+                'today_stats': {
+                    'todays_collections': 0,
+                    'todays_weight': 0.0,
+                    'active_collectors': 0,
+                    'pending_requests': 0
+                },
+                'system_health': {
+                    'status': 'healthy',
+                    'uptime': '100%'
+                }
             }
         }), 200
         
