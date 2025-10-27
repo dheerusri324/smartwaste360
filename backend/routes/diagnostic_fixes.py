@@ -139,6 +139,66 @@ def diagnose_all_issues():
             'error': str(e)
         }), 500
 
+@bp.route('/assign-colony-to-user', methods=['POST'])
+def assign_colony_to_user():
+    """Assign a colony to a user"""
+    try:
+        data = request.get_json()
+        username = data.get('username')
+        colony_name = data.get('colony_name')
+        
+        if not username or not colony_name:
+            return jsonify({
+                'status': 'error',
+                'message': 'username and colony_name required'
+            }), 400
+        
+        with get_db() as db:
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Find user
+                cursor.execute("SELECT user_id, colony_id FROM users WHERE username = %s", (username,))
+                user = cursor.fetchone()
+                
+                if not user:
+                    return jsonify({
+                        'status': 'error',
+                        'message': f'User {username} not found'
+                    }), 404
+                
+                # Find colony
+                cursor.execute("SELECT colony_id FROM colonies WHERE colony_name = %s", (colony_name,))
+                colony = cursor.fetchone()
+                
+                if not colony:
+                    return jsonify({
+                        'status': 'error',
+                        'message': f'Colony {colony_name} not found'
+                    }), 404
+                
+                # Assign colony to user
+                cursor.execute("""
+                    UPDATE users 
+                    SET colony_id = %s 
+                    WHERE user_id = %s
+                """, (colony['colony_id'], user['user_id']))
+                
+                db.commit()
+                
+                return jsonify({
+                    'status': 'success',
+                    'message': f'User {username} assigned to colony {colony_name}',
+                    'user_id': user['user_id'],
+                    'colony_id': colony['colony_id'],
+                    'previous_colony_id': user['colony_id']
+                }), 200
+                
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        }), 500
+
 @bp.route('/seed-collection-points', methods=['POST'])
 def seed_collection_points():
     """Seed sample collection points for testing"""
