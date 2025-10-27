@@ -75,18 +75,19 @@ app.register_blueprint(database_debug.bp, url_prefix='/api/database-debug')
 @app.route('/')
 def home():
     return jsonify({
-        'message': 'SmartWaste360 API is alive! DATABASE DIAGNOSTIC v4.0.0',
-        'version': '4.0.0',
+        'message': 'SmartWaste360 API is alive! DATABASE DIAGNOSTIC v4.1.0',
+        'version': '4.1.0',
         'status': 'production',
-        'deployment': 'DATABASE-SYNC-AND-SCHEMA-FIX',
+        'deployment': 'DATABASE-CLEAR-OLD-DATA-FIX',
         'timestamp': '2025-10-27',
         'cors_enabled': True,
         'diagnostic_endpoints': {
             'full_diagnostic': '/api/database-debug/full-diagnostic',
             'fix_schema': '/api/database-debug/fix-missing-columns',
-            'clear_old_data': '/api/database-debug/clear-old-data'
+            'clear_old_data_7days': '/api/database-debug/clear-old-data',
+            'clear_all_bookings': '/api/database-debug/clear-all-bookings'
         },
-        'render_wake_up': 'DATABASE_DIAGNOSTIC_READY'
+        'render_wake_up': 'CLEAR_OLD_DATA_READY'
     })
 
 @app.route('/health')
