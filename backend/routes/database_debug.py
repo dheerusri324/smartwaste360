@@ -158,9 +158,16 @@ def full_diagnostic():
                 """)
                 booking_timeline = cursor.fetchone()
                 if booking_timeline:
+                    booking_timeline = dict(booking_timeline)
                     for key, value in booking_timeline.items():
                         if hasattr(value, 'isoformat'):
                             booking_timeline[key] = value.isoformat()
+                else:
+                    booking_timeline = {
+                        'oldest_booking': None,
+                        'newest_booking': None,
+                        'total_bookings': 0
+                    }
                 
                 return jsonify({
                     'status': 'success',
@@ -193,7 +200,8 @@ def full_diagnostic():
                     'critical_issues': {
                         'missing_columns': missing_columns,
                         'empty_tables': [k for k, v in data_counts.items() if v == 0],
-                        'old_data_detected': booking_timeline.get('oldest_booking', '') < '2025-10-01' if booking_timeline else False
+                        'old_data_detected': (booking_timeline.get('oldest_booking') is not None and 
+                                            booking_timeline.get('oldest_booking', '9999') < '2025-10-01')
                     }
                 }), 200
                 
