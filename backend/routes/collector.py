@@ -299,12 +299,20 @@ def complete_collection():
                     WHERE colony_id = %s
                 """, (colony_id,))
                 
+                # Update collector's total weight collected
+                cursor.execute("""
+                    UPDATE collectors 
+                    SET total_weight_collected = total_weight_collected + %s
+                    WHERE collector_id = %s
+                """, (total_weight, collector_id))
+                
                 db.commit()
                 
                 return jsonify({
                     'message': 'Collection completed successfully',
                     'total_weight': total_weight,
                     'colony_updated': True,
+                    'collector_updated': True,
                     'waste_collected': waste_types
                 }), 200
                 

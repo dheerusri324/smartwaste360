@@ -44,10 +44,10 @@ class MLService:
         # If model is not available, return default classification
         if not self.model:
             return {
-                'predicted_category': waste_type or 'plastic',
+                'predicted_category': 'plastic',
                 'confidence': 0.5,
                 'recyclable': True,
-                'waste_type': waste_type,
+                'waste_type': 'dry',  # Default to dry
                 'impact': { 'co2_saved_kg': 0.0 }
             }
             
@@ -68,10 +68,14 @@ class MLService:
 
             is_recyclable = self.recyclable_map.get(predicted_category, False)
 
+            # Map predicted_category to waste_type (wet/dry classification)
+            # Organic waste is 'wet', everything else is 'dry'
+            determined_waste_type = 'wet' if predicted_category == 'organic' else 'dry'
+            
             return {
                 'predicted_category': predicted_category,
                 'confidence': 0.99,
-                'waste_type': waste_type,
+                'waste_type': determined_waste_type,  # Use ML-determined type, not user input
                 'recyclable': is_recyclable,
                 'impact': { 'co2_saved_kg': 0.0 }
             }
@@ -82,10 +86,11 @@ class MLService:
             traceback.print_exc()
             
             # Fallback to a default classification
+            # Use 'dry' as default since most waste is dry
             return {
                 'predicted_category': 'plastic',
                 'confidence': 0.50,
-                'waste_type': waste_type,
+                'waste_type': 'dry',  # Default to dry, not user input
                 'recyclable': True,
                 'impact': { 'co2_saved_kg': 0.0 }
             }

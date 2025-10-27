@@ -415,3 +415,43 @@ class Colony:
             with db.cursor(cursor_factory=RealDictCursor) as cursor:
                 cursor.execute(sql, (limit,))
                 return cursor.fetchall()
+
+    @staticmethod
+    def add_waste_to_colony(colony_id, waste_category, weight_kg):
+        """Add waste to colony's accumulated waste amounts"""
+        with get_db() as db:
+            if not db: raise ConnectionError("Database connection not available.")
+            with db.cursor() as cursor:
+                # Map waste categories to colony columns
+                category_column_map = {
+                    'plastic': 'current_plastic_kg',
+                    'paper': 'current_paper_kg',
+                    'metal': 'current_metal_kg',
+                    'glass': 'current_glass_kg',
+                    'textile': 'current_textile_kg',
+                    'cardboard': 'current_paper_kg',  # Cardboard counts as paper
+                    'organic': 'current_dry_waste_kg'  # For now, add to dry waste
+                }
+                
+                column = category_column_map.get(waste_category.lower())
+                if not column:
+                    print(f"[WARNING] Unknown waste category: {waste_category}, skipping colony update")
+                    return
+                
+                # Update the specific waste type column
+                cursor.execute(f"""
+                    UPDATE colonies 
+                    SET {column} = {column} + %s
+                    WHERE colony_id = %s
+                """, (weight_kg, colony_id))
+                
+                # Recalculate total dry waste
+                cursor.execute("""
+                    UPDATE colonies 
+                    SET current_dry_waste_kg = current_plastic_kg + current_paper_kg + 
+                                               current_metal_kg + current_glass_kg + current_textile_kg
+                    WHERE colony_id = %s
+                """, (colony_id,))
+                
+                db.commit()
+                print(f"[INFO] Added {weight_kg}kg of {waste_category} to colony {colony_id}")

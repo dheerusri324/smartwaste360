@@ -52,7 +52,7 @@ def create_directories():
 create_directories()
 
 # --- IMPORT & REGISTER BLUEPRINTS (ROUTES) ---
-from routes import auth, waste, booking, leaderboard, camera, collector, transaction, health, colony, collection_points, admin, analytics, database_debug
+from routes import auth, waste, booking, leaderboard, camera, collector, transaction, health, colony, collection_points, admin, analytics, database_debug, diagnostic_fixes
 
 app.register_blueprint(auth.bp, url_prefix='/api/auth')
 app.register_blueprint(waste.bp, url_prefix='/api/waste')
@@ -67,6 +67,7 @@ app.register_blueprint(admin.bp, url_prefix='/api/admin')
 app.register_blueprint(analytics.bp, url_prefix='/api/analytics')
 app.register_blueprint(health.bp, url_prefix='/health')
 app.register_blueprint(database_debug.bp, url_prefix='/api/database-debug')
+app.register_blueprint(diagnostic_fixes.bp, url_prefix='/api/fixes')
 
 # Advanced features temporarily disabled for debugging
 # app.register_blueprint(advanced_features.bp, url_prefix='/api/advanced')
@@ -75,19 +76,25 @@ app.register_blueprint(database_debug.bp, url_prefix='/api/database-debug')
 @app.route('/')
 def home():
     return jsonify({
-        'message': 'SmartWaste360 API is alive! DATABASE DIAGNOSTIC v4.1.0',
-        'version': '4.1.0',
+        'message': 'SmartWaste360 API - 5-EXPERT FIX DEPLOYED v5.0.0',
+        'version': '5.0.0',
         'status': 'production',
-        'deployment': 'DATABASE-CLEAR-OLD-DATA-FIX',
+        'deployment': 'CRITICAL-FIXES-ALL-ISSUES',
         'timestamp': '2025-10-27',
         'cors_enabled': True,
-        'diagnostic_endpoints': {
-            'full_diagnostic': '/api/database-debug/full-diagnostic',
-            'fix_schema': '/api/database-debug/fix-missing-columns',
-            'clear_old_data_7days': '/api/database-debug/clear-old-data',
-            'clear_all_bookings': '/api/database-debug/clear-all-bookings'
+        'fixes_applied': {
+            'waste_classification': 'ML determines waste_type (not always dry)',
+            'collection_points': 'Seed endpoint available',
+            'collector_dashboard': 'Updates on collection completion',
+            'pickup_scheduler': 'Colony waste accumulates from classifications',
+            'admin_dashboard': 'Collector stats update properly'
         },
-        'render_wake_up': 'CLEAR_OLD_DATA_READY'
+        'diagnostic_endpoints': {
+            'diagnose_all': '/api/fixes/diagnose-all-issues',
+            'seed_collection_points': '/api/fixes/seed-collection-points',
+            'full_diagnostic': '/api/database-debug/full-diagnostic'
+        },
+        'render_wake_up': 'ALL_CRITICAL_FIXES_DEPLOYED'
     })
 
 @app.route('/health')

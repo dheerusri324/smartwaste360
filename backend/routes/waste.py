@@ -62,16 +62,21 @@ def classify_waste_route():
         points_earned = points_service.calculate_points(result['predicted_category'], weight)
         co2_saved = points_service.get_co_2_savings(result['predicted_category'], weight)
         
+        # Use ML-determined waste_type, not user input
+        final_waste_type = result['waste_type']
+        
         WasteLog.create_waste_log(
             user_id, filepath, result['predicted_category'], result['confidence'],
-            weight, waste_type, points_earned, None, None,
+            weight, final_waste_type, points_earned, None, None,
             result['recyclable'], co2_saved
         )
         
         User.update_user_points(user_id, points_earned, weight)
         
-        # Colony points will be updated automatically by the database trigger
-        # when the waste log is inserted, so no manual update needed
+        # Update colony waste amounts based on predicted category
+        user = User.get_by_id(user_id)
+        if user and user.get('colony_id'):
+            Colony.add_waste_to_colony(user['colony_id'], result['predicted_category'], weight)
         
         return jsonify({
             'classification': result,
