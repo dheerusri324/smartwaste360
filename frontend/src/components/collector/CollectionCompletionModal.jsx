@@ -1,7 +1,7 @@
 // frontend/src/components/collector/CollectionCompletionModal.jsx
 import React, { useState } from 'react';
 import { completeCollection } from '../../services/collector';
-import { CheckCircle, Package, Scale, X } from 'lucide-react';
+import { CheckCircle, Scale, X } from 'lucide-react';
 
 const CollectionCompletionModal = ({ booking, isOpen, onClose, onComplete }) => {
   const [collectionData, setCollectionData] = useState({

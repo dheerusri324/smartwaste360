@@ -1,7 +1,7 @@
 // frontend/src/pages/CollectorSettings.jsx
 
 import React, { useState, useEffect } from 'react';
-import { getCollectorProfile, updateCollectorProfile, updateCollectorLocation } from '../services/collector';
+import { getCollectorProfile, updateCollectorLocation } from '../services/collector';
 import { MapPin, Save, Navigation, Globe, User, Truck } from 'lucide-react';
 
 const CollectorSettings = () => {
