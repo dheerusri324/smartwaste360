@@ -189,7 +189,7 @@ const AnalyticsDashboard = () => {
               <p className="text-sm text-gray-600">Today's Weight</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-purple-600">{realtimeData.current_status.pending_collections || 0}</p>
+              <p className="text-2xl font-bold text-purple-600">{realtimeData?.current_status?.pending_collections || realtimeData?.pending_requests || 0}</p>
               <p className="text-sm text-gray-600">Pending Collections</p>
             </div>
             <div className="text-center">
