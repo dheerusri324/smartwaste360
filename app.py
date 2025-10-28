@@ -76,10 +76,10 @@ app.register_blueprint(diagnostic_fixes.bp, url_prefix='/api/fixes')
 @app.route('/')
 def home():
     return jsonify({
-        'message': 'SmartWaste360 API - 5-EXPERT FIX DEPLOYED v5.0.0',
-        'version': '5.0.0',
+        'message': 'SmartWaste360 API - ALL FIXES DEPLOYED v5.1.0',
+        'version': '5.1.0',
         'status': 'production',
-        'deployment': 'CRITICAL-FIXES-ALL-ISSUES',
+        'deployment': 'COMPLETE-FIX-WITH-COLONY-ASSIGNMENT',
         'timestamp': '2025-10-27',
         'cors_enabled': True,
         'fixes_applied': {
