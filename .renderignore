@@ -1,0 +1,134 @@
+# Render Ignore File
+# Files and directories to exclude from Render deployments
+
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Frontend (not needed for backend deployment)
+frontend/
+node_modules/
+package.json
+package-lock.json
+
+# Documentation
+docs/
+*.md
+!README.md
+ADVANCED_FEATURES_GUIDE.md
+COLLECTION_COMPLETION_GUIDE.md
+COLLECTION_SYSTEM_GUIDE.md
+COMPREHENSIVE_FIX.md
+CRITICAL_FIXES_APPLIED.md
+DEPLOY_BACKEND.md
+DEPLOY_FRONTEND.md
+DEPLOYMENT_FINAL.md
+DEPLOYMENT_GUIDE.md
+DEPLOYMENT_SUCCESS.md
+FEATURE_ROADMAP.md
+FINAL_COMPREHENSIVE_FIX.md
+FINAL_STATUS.md
+FIX_COLONY_ASSIGNMENT.md
+FORCE_DEPLOY.txt
+LOGIN_GUIDE.md
+PRODUCTION_DATABASE_REPORT.md
+QUICK_FIX_SUMMARY.md
+RUN_APPLICATION.md
+SOLUTION_SUMMARY.md
+
+# Test files
+tests/
+*_test.py
+test_*.py
+*.test.py
+*.spec.py
+
+# PowerShell scripts (deployment helpers)
+*.ps1
+check-bookings-table.ps1
+check-user-colony.ps1
+deploy-cloud.ps1
+deploy-to-production.ps1
+diagnose-production.ps1
+final-cleanup.ps1
+fix-user-lol.ps1
+prepare-deploy.ps1
+test-booking-data.ps1
+test-colony-waste.ps1
+test-critical-fixes.ps1
+verify-clean-database.ps1
+
+# Git files
+.git/
+.gitignore
+.github/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Deployment configs for other platforms
+.vercelignore
+.railwayignore
+.dockerignore
+vercel.json
+vercel-backend.json
+railway.json
+Dockerfile
+
+# Railway deployment folder
+railway-deploy/
+
+# Database files (use Render's managed database)
+database/
+*.db
+*.sqlite
+*.sqlite3
+
+# ML model files (large, can be loaded from external storage if needed)
+mobilenet_waste_classifier.h5
+mobilenet_waste_classifier.tflite
+ml-model/
+
+# Uploads directory (use cloud storage in production)
+uploads/
+*.jpg
+*.jpeg
+*.png
+*.gif
+
+# Environment files (use Render's environment variables)
+.env
+.env.local
+.env.production
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Setup and installation scripts
+setup.py
+start_app.py
