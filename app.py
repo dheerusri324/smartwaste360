@@ -52,7 +52,7 @@ def create_directories():
 create_directories()
 
 # --- IMPORT & REGISTER BLUEPRINTS (ROUTES) ---
-from routes import auth, waste, booking, leaderboard, camera, collector, transaction, health, colony, collection_points, admin, analytics, database_debug, diagnostic_fixes, debug_logs
+from routes import auth, waste, booking, leaderboard, camera, collector, transaction, health, colony, collection_points, admin, analytics, database_debug, diagnostic_fixes, debug_logs, migration
 
 app.register_blueprint(auth.bp, url_prefix='/api/auth')
 app.register_blueprint(waste.bp, url_prefix='/api/waste')
@@ -69,6 +69,7 @@ app.register_blueprint(health.bp, url_prefix='/health')
 app.register_blueprint(database_debug.bp, url_prefix='/api/database-debug')
 app.register_blueprint(diagnostic_fixes.bp, url_prefix='/api/fixes')
 app.register_blueprint(debug_logs.bp, url_prefix='/api/debug')
+app.register_blueprint(migration.bp, url_prefix='/api/migration')
 
 # Advanced features temporarily disabled for debugging
 # app.register_blueprint(advanced_features.bp, url_prefix='/api/advanced')
@@ -77,10 +78,10 @@ app.register_blueprint(debug_logs.bp, url_prefix='/api/debug')
 @app.route('/')
 def home():
     return jsonify({
-        'message': 'SmartWaste360 API - COLONY POINTS FIX v5.5.1',
-        'version': '5.5.1',
+        'message': 'SmartWaste360 API - MIGRATION TOOLS v5.6.0',
+        'version': '5.6.0',
         'status': 'production',
-        'deployment': 'COLONY-POINTS-AND-WASTE-UPDATE',
+        'deployment': 'BACKFILL-COLONY-POINTS-AND-WASTE',
         'timestamp': '2025-10-29',
         'cors_enabled': True,
         'fixes_applied': {
@@ -88,7 +89,9 @@ def home():
             'collection_points': 'Seed endpoint available',
             'collector_dashboard': 'Updates on collection completion',
             'pickup_scheduler': 'Colony waste accumulates from classifications',
-            'admin_dashboard': 'Collector stats update properly'
+            'admin_dashboard': 'Collector stats update properly',
+            'colony_points': 'Colony earns points when users classify waste',
+            'colony_waste': 'Colony waste tracking by category'
         },
         'diagnostic_endpoints': {
             'diagnose_all': '/api/fixes/diagnose-all-issues',
@@ -97,7 +100,12 @@ def home():
             'recent_logs': '/api/debug/recent-logs',
             'clear_logs': '/api/debug/clear-logs'
         },
-        'render_wake_up': 'LOG_CAPTURE_ENABLED'
+        'migration_endpoints': {
+            'backfill_colony_points': '/api/migration/backfill-colony-points (POST)',
+            'backfill_colony_waste': '/api/migration/backfill-colony-waste (POST)',
+            'migration_status': '/api/migration/migration-status (GET)'
+        },
+        'render_wake_up': 'MIGRATION_TOOLS_AVAILABLE'
     })
 
 @app.route('/health')
