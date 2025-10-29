@@ -23,7 +23,18 @@ points_service = PointsService()
 def capture_image():
     """Handle image capture, classification, and logging with user-provided weight."""
     try:
+        from utils.log_capture import log_capture
+        
+        # Log that request was received
+        log_capture.add('INFO', '[CAMERA] Classification request received via /camera/capture', 
+                       method=request.method, 
+                       content_type=request.content_type,
+                       origin=request.headers.get('Origin'))
+        print(f"[INFO] [CAMERA] Classification request received from {request.headers.get('Origin')}")
+        
         user_id = get_jwt_identity()
+        log_capture.add('INFO', f'[CAMERA] User {user_id} authenticated for classification', user_id=user_id)
+        
         data = request.get_json()
         
         # 1. Validate incoming data
@@ -68,8 +79,26 @@ def capture_image():
         
         User.update_user_points(user_id, points_earned, weight)
         
-        # Colony points will be updated automatically by the database trigger
-        # when the waste log is inserted, so no manual update needed
+        # Update colony waste amounts based on predicted category
+        from utils.log_capture import log_capture
+        log_capture.add('DEBUG', f"[CAMERA] Getting user {user_id} to update colony waste", user_id=user_id)
+        print(f"[DEBUG] [CAMERA] Getting user {user_id} to update colony waste")
+        
+        user = User.get_user_by_id(user_id)
+        log_capture.add('DEBUG', f"[CAMERA] User data: colony_id={user.get('colony_id') if user else None}", user_id=user_id, user_data=user)
+        print(f"[DEBUG] [CAMERA] User: {user}")
+        
+        if user and user.get('colony_id'):
+            log_capture.add('DEBUG', f"[CAMERA] Calling Colony.add_waste_to_colony({user['colony_id']}, {result['predicted_category']}, {weight})", 
+                          user_id=user_id, colony_id=user['colony_id'], category=result['predicted_category'], weight=weight)
+            print(f"[DEBUG] [CAMERA] Calling Colony.add_waste_to_colony({user['colony_id']}, {result['predicted_category']}, {weight})")
+            Colony.add_waste_to_colony(user['colony_id'], result['predicted_category'], weight)
+            log_capture.add('INFO', f"[CAMERA] Added {weight}kg of {result['predicted_category']} to colony {user['colony_id']}", 
+                          user_id=user_id, colony_id=user['colony_id'])
+            print(f"[DEBUG] [CAMERA] Colony waste update completed")
+        else:
+            log_capture.add('WARNING', f"[CAMERA] User has no colony_id! Cannot update colony waste", user_id=user_id, user_data=user)
+            print(f"[DEBUG] [CAMERA] User has no colony_id! User data: {user}")
         
         # 5. Send complete success response to the frontend
         return jsonify({
