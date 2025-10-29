@@ -470,7 +470,19 @@ class Colony:
                     WHERE colony_id = %s
                 """, (colony_id,))
                 
+                # Also update colony total_points based on waste added
+                # Calculate points for this waste (same logic as user points)
+                from services.points_service import PointsService
+                points_service = PointsService()
+                points_earned = points_service.calculate_points(waste_category, weight_kg)
+                
+                cursor.execute("""
+                    UPDATE colonies 
+                    SET total_points = total_points + %s
+                    WHERE colony_id = %s
+                """, (points_earned, colony_id))
+                
                 db.commit()
-                log_capture.add('INFO', f'Successfully added {weight_kg}kg of {waste_category} to colony {colony_id}', 
-                              colony_id=colony_id, waste_category=waste_category, weight_kg=weight_kg)
-                print(f"[INFO] Added {weight_kg}kg of {waste_category} to colony {colony_id}")
+                log_capture.add('INFO', f'Successfully added {weight_kg}kg of {waste_category} to colony {colony_id} (+{points_earned} points)', 
+                              colony_id=colony_id, waste_category=waste_category, weight_kg=weight_kg, points_earned=points_earned)
+                print(f"[INFO] Added {weight_kg}kg of {waste_category} to colony {colony_id} (+{points_earned} points)")
