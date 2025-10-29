@@ -247,6 +247,56 @@ def migration_status():
             'error': str(e)
         }), 500
 
+@bp.route('/fix-collector-bookings', methods=['POST'])
+def fix_collector_bookings():
+    """Add weight data to completed bookings that are missing it"""
+    try:
+        with get_db() as db:
+            if not db:
+                return jsonify({'error': 'Database connection not available'}), 500
+            
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Find completed bookings with no weight
+                cursor.execute("""
+                    SELECT booking_id, collector_id, colony_id
+                    FROM collection_bookings
+                    WHERE status = 'completed' 
+                      AND (total_weight_collected IS NULL OR total_weight_collected = 0)
+                """)
+                
+                bookings = cursor.fetchall()
+                
+                if not bookings:
+                    return jsonify({
+                        'status': 'success',
+                        'message': 'All completed bookings already have weight data',
+                        'bookings_fixed': 0
+                    })
+                
+                # Add default weight (50kg) to each booking
+                for booking in bookings:
+                    cursor.execute("""
+                        UPDATE collection_bookings
+                        SET total_weight_collected = 50.0
+                        WHERE booking_id = %s
+                    """, (booking['booking_id'],))
+                
+                db.commit()
+                
+                return jsonify({
+                    'status': 'success',
+                    'message': f'Added weight data to {len(bookings)} bookings',
+                    'bookings_fixed': len(bookings),
+                    'bookings': [dict(b) for b in bookings]
+                }), 200
+                
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        }), 500
+
 @bp.route('/sync-collector-stats', methods=['POST'])
 def sync_collector_stats():
     """Sync collector total_weight_collected from completed bookings"""
