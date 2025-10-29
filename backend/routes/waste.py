@@ -23,16 +23,37 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+@bp.route('/test', methods=['GET'])
+def test_waste_endpoint():
+    """Test endpoint to verify waste routes are accessible"""
+    log_capture.add('INFO', 'Waste test endpoint accessed')
+    return jsonify({
+        'status': 'success',
+        'message': 'Waste classification endpoint is reachable',
+        'ml_service_active': ml_service.model is not None,
+        'version': '5.4.0'
+    })
+
 @bp.route('/classify', methods=['POST'])
 @jwt_required()
 def classify_waste_route():
     """Handles waste classification from a multipart/form-data request."""
     try:
+        # Log that request was received
+        log_capture.add('INFO', 'Classification request received', 
+                       method=request.method, 
+                       content_type=request.content_type,
+                       origin=request.headers.get('Origin'))
+        print(f"[INFO] Classification request received from {request.headers.get('Origin')}")
+        
         identity = get_jwt_identity()
         claims = get_jwt()
         if claims.get('role') != 'user':
+            log_capture.add('WARNING', 'Non-user tried to classify waste', identity=identity, role=claims.get('role'))
             return jsonify({"msg": "Only users can classify waste"}), 403
         user_id = identity
+        
+        log_capture.add('INFO', f'User {user_id} authenticated for classification', user_id=user_id)
 
         if 'image' not in request.files:
             return jsonify({'error': 'No image file part in request'}), 400
