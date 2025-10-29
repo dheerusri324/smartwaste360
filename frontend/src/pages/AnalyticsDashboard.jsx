@@ -207,7 +207,7 @@ const AnalyticsDashboard = () => {
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Daily Performance Trend</h3>
             <div className="space-y-3">
-              {performance.daily_trends.slice(0, 7).map((day, index) => (
+              {(performance.daily_trends || []).slice(0, 7).map((day, index) => (
                 <div key={index} className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">
                     {new Date(day.collection_date).toLocaleDateString()}
@@ -225,9 +225,9 @@ const AnalyticsDashboard = () => {
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Waste Type Specialization</h3>
             <div className="space-y-3">
-              {performance.waste_breakdown.slice(0, 5).map((waste, index) => {
-                const percentage = performance.waste_breakdown.length > 0 
-                  ? (waste.total_weight / performance.waste_breakdown.reduce((sum, w) => sum + parseFloat(w.total_weight), 0)) * 100 
+              {(performance.waste_breakdown || []).slice(0, 5).map((waste, index) => {
+                const percentage = (performance.waste_breakdown || []).length > 0 
+                  ? (waste.total_weight / (performance.waste_breakdown || []).reduce((sum, w) => sum + parseFloat(w.total_weight), 0)) * 100 
                   : 0;
                 
                 return (
@@ -259,7 +259,7 @@ const AnalyticsDashboard = () => {
           </h3>
           
           <div className="space-y-3">
-            {realtimeData.recent_activity.slice(0, 5).map((activity, index) => (
+            {(realtimeData.recent_activity || []).slice(0, 5).map((activity, index) => (
               <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-3">
                   <Recycle className="h-5 w-5 text-emerald-600" />
