@@ -101,7 +101,7 @@ def classify_waste_route():
         # Update colony waste amounts based on predicted category
         log_capture.add('DEBUG', f"Getting user {user_id} to update colony waste", user_id=user_id)
         print(f"[DEBUG] Getting user {user_id} to update colony waste")
-        user = User.get_by_id(user_id)
+        user = User.get_user_by_id(user_id)
         log_capture.add('DEBUG', f"User data: colony_id={user.get('colony_id') if user else None}", user_id=user_id, user_data=user)
         print(f"[DEBUG] User: {user}")
         if user and user.get('colony_id'):

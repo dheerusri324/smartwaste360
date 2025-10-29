@@ -419,8 +419,16 @@ class Colony:
     @staticmethod
     def add_waste_to_colony(colony_id, waste_category, weight_kg):
         """Add waste to colony's accumulated waste amounts"""
+        from utils.log_capture import log_capture
+        
+        log_capture.add('DEBUG', f'add_waste_to_colony called', 
+                       colony_id=colony_id, waste_category=waste_category, weight_kg=weight_kg)
+        print(f"[DEBUG] add_waste_to_colony called: colony_id={colony_id}, category={waste_category}, weight={weight_kg}")
+        
         with get_db() as db:
-            if not db: raise ConnectionError("Database connection not available.")
+            if not db: 
+                log_capture.add('ERROR', 'Database connection not available in add_waste_to_colony')
+                raise ConnectionError("Database connection not available.")
             with db.cursor() as cursor:
                 # Map waste categories to colony columns
                 category_column_map = {
@@ -435,8 +443,13 @@ class Colony:
                 
                 column = category_column_map.get(waste_category.lower())
                 if not column:
+                    log_capture.add('WARNING', f'Unknown waste category: {waste_category}', 
+                                  colony_id=colony_id, waste_category=waste_category)
                     print(f"[WARNING] Unknown waste category: {waste_category}, skipping colony update")
                     return
+                
+                log_capture.add('DEBUG', f'Updating {column} for colony {colony_id}', 
+                              colony_id=colony_id, column=column, weight_kg=weight_kg)
                 
                 # Update the specific waste type column
                 cursor.execute(f"""
@@ -444,6 +457,10 @@ class Colony:
                     SET {column} = {column} + %s
                     WHERE colony_id = %s
                 """, (weight_kg, colony_id))
+                
+                rows_affected = cursor.rowcount
+                log_capture.add('DEBUG', f'UPDATE query executed, rows affected: {rows_affected}', 
+                              colony_id=colony_id, rows_affected=rows_affected)
                 
                 # Recalculate total dry waste
                 cursor.execute("""
@@ -454,4 +471,6 @@ class Colony:
                 """, (colony_id,))
                 
                 db.commit()
+                log_capture.add('INFO', f'Successfully added {weight_kg}kg of {waste_category} to colony {colony_id}', 
+                              colony_id=colony_id, waste_category=waste_category, weight_kg=weight_kg)
                 print(f"[INFO] Added {weight_kg}kg of {waste_category} to colony {colony_id}")
