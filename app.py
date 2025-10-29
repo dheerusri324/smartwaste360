@@ -77,10 +77,10 @@ app.register_blueprint(debug_logs.bp, url_prefix='/api/debug')
 @app.route('/')
 def home():
     return jsonify({
-        'message': 'SmartWaste360 API - COLONY WASTE FIX v5.5.0',
-        'version': '5.5.0',
+        'message': 'SmartWaste360 API - COLONY POINTS FIX v5.5.1',
+        'version': '5.5.1',
         'status': 'production',
-        'deployment': 'CAMERA-ROUTE-COLONY-UPDATE',
+        'deployment': 'COLONY-POINTS-AND-WASTE-UPDATE',
         'timestamp': '2025-10-29',
         'cors_enabled': True,
         'fixes_applied': {
