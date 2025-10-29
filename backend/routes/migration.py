@@ -246,3 +246,65 @@ def migration_status():
             'status': 'error',
             'error': str(e)
         }), 500
+
+@bp.route('/sync-collector-stats', methods=['POST'])
+def sync_collector_stats():
+    """Sync collector total_weight_collected from completed bookings"""
+    try:
+        with get_db() as db:
+            if not db:
+                return jsonify({'error': 'Database connection not available'}), 500
+            
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Get all collectors with their completed bookings
+                cursor.execute("""
+                    SELECT 
+                        c.collector_id,
+                        c.name,
+                        c.total_weight_collected as current_total,
+                        COALESCE(SUM(cb.total_weight_collected), 0) as actual_total,
+                        COUNT(cb.booking_id) as completed_bookings
+                    FROM collectors c
+                    LEFT JOIN collection_bookings cb ON c.collector_id = cb.collector_id 
+                        AND cb.status = 'completed'
+                    GROUP BY c.collector_id, c.name, c.total_weight_collected
+                """)
+                
+                collectors = cursor.fetchall()
+                
+                updated_collectors = []
+                for collector in collectors:
+                    actual_total = float(collector['actual_total'] or 0)
+                    current_total = float(collector['current_total'] or 0)
+                    
+                    if actual_total != current_total:
+                        # Update collector's total
+                        cursor.execute("""
+                            UPDATE collectors 
+                            SET total_weight_collected = %s
+                            WHERE collector_id = %s
+                        """, (actual_total, collector['collector_id']))
+                        
+                        updated_collectors.append({
+                            'collector_id': collector['collector_id'],
+                            'name': collector['name'],
+                            'old_total': current_total,
+                            'new_total': actual_total,
+                            'completed_bookings': collector['completed_bookings']
+                        })
+                
+                db.commit()
+                
+                return jsonify({
+                    'status': 'success',
+                    'message': f'Synced {len(updated_collectors)} collectors',
+                    'collectors_updated': updated_collectors,
+                    'total_collectors_checked': len(collectors)
+                }), 200
+                
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        }), 500
