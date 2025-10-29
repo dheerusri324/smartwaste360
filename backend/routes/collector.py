@@ -222,6 +222,137 @@ def get_ready_colonies():
         traceback.print_exc()
         return jsonify({'error': 'An internal server error occurred'}), 500
 
+@bp.route('/dashboard', methods=['GET'])
+@jwt_required()
+def get_collector_dashboard():
+    """Get collector dashboard statistics"""
+    try:
+        collector_id = get_jwt_identity()
+        claims = get_jwt()
+
+        if claims.get('role') != 'collector':
+            return jsonify({"msg": "Access denied: Collector token required"}), 403
+
+        from config.database import get_db
+        from psycopg2.extras import RealDictCursor
+        
+        with get_db() as db:
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Get total collections
+                cursor.execute("""
+                    SELECT COUNT(*) as total_collections
+                    FROM collection_bookings
+                    WHERE collector_id = %s AND status = 'completed'
+                """, (collector_id,))
+                total_collections = cursor.fetchone()['total_collections'] or 0
+                
+                # Get pending requests
+                cursor.execute("""
+                    SELECT COUNT(*) as pending_requests
+                    FROM collection_bookings
+                    WHERE collector_id = %s AND status = 'scheduled'
+                """, (collector_id,))
+                pending_requests = cursor.fetchone()['pending_requests'] or 0
+                
+                # Get completed today
+                cursor.execute("""
+                    SELECT COUNT(*) as completed_today
+                    FROM collection_bookings
+                    WHERE collector_id = %s 
+                    AND status = 'completed'
+                    AND DATE(completed_at) = CURRENT_DATE
+                """, (collector_id,))
+                completed_today = cursor.fetchone()['completed_today'] or 0
+                
+                # Get total weight collected
+                cursor.execute("""
+                    SELECT COALESCE(total_weight_collected, 0) as total_weight
+                    FROM collectors
+                    WHERE collector_id = %s
+                """, (collector_id,))
+                total_weight = float(cursor.fetchone()['total_weight'] or 0)
+                
+                # Get total users served (unique users from transactions)
+                cursor.execute("""
+                    SELECT COUNT(DISTINCT user_id) as total_users
+                    FROM user_transactions
+                    WHERE collector_id = %s
+                """, (collector_id,))
+                total_users = cursor.fetchone()['total_users'] or 0
+                
+                # Calculate earnings (example: $0.50 per kg)
+                total_earnings = total_weight * 0.50
+                
+                return jsonify({
+                    'total_collections': total_collections,
+                    'pending_requests': pending_requests,
+                    'total_earnings': round(total_earnings, 2),
+                    'completed_today': completed_today,
+                    'total_users': total_users,
+                    'total_weight_collected': round(total_weight, 2)
+                }), 200
+                
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Failed to fetch dashboard data: {str(e)}'}), 500
+
+@bp.route('/recent-activities', methods=['GET'])
+@jwt_required()
+def get_recent_activities():
+    """Get recent collection activities for collector"""
+    try:
+        collector_id = get_jwt_identity()
+        claims = get_jwt()
+
+        if claims.get('role') != 'collector':
+            return jsonify({"msg": "Access denied: Collector token required"}), 403
+
+        from config.database import get_db
+        from psycopg2.extras import RealDictCursor
+        
+        with get_db() as db:
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute("""
+                    SELECT 
+                        cb.booking_id,
+                        cb.booking_date,
+                        cb.time_slot,
+                        cb.status,
+                        cb.total_weight_collected,
+                        cb.completed_at,
+                        c.colony_name,
+                        c.colony_id
+                    FROM collection_bookings cb
+                    JOIN colonies c ON cb.colony_id = c.colony_id
+                    WHERE cb.collector_id = %s
+                    ORDER BY cb.created_at DESC
+                    LIMIT 10
+                """, (collector_id,))
+                
+                activities = cursor.fetchall()
+                
+                # Format activities
+                formatted_activities = []
+                for activity in activities:
+                    formatted_activities.append({
+                        'id': activity['booking_id'],
+                        'colony_name': activity['colony_name'],
+                        'colony_id': activity['colony_id'],
+                        'user_name': f"Colony {activity['colony_id']}",  # Placeholder
+                        'status': activity['status'],
+                        'pickup_time': activity['booking_date'].isoformat() if activity['booking_date'] else None,
+                        'weight_collected': float(activity['total_weight_collected']) if activity['total_weight_collected'] else 0,
+                        'completed_at': activity['completed_at'].isoformat() if activity['completed_at'] else None
+                    })
+                
+                return jsonify({'activities': formatted_activities}), 200
+                
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Failed to fetch activities: {str(e)}'}), 500
+
 @bp.route('/complete-collection', methods=['POST'])
 @jwt_required()
 def complete_collection():
