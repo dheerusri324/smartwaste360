@@ -76,10 +76,10 @@ app.register_blueprint(diagnostic_fixes.bp, url_prefix='/api/fixes')
 @app.route('/')
 def home():
     return jsonify({
-        'message': 'SmartWaste360 API - FORCE REBUILD v5.2.0',
-        'version': '5.2.0',
+        'message': 'SmartWaste360 API - DEBUG LOGGING v5.3.0',
+        'version': '5.3.0',
         'status': 'production',
-        'deployment': 'FORCE-CLEAR-CACHE-REBUILD',
+        'deployment': 'DEBUG-COLONY-WASTE-ISSUE',
         'timestamp': '2025-10-27',
         'cors_enabled': True,
         'fixes_applied': {

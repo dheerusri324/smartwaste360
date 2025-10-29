@@ -74,9 +74,15 @@ def classify_waste_route():
         User.update_user_points(user_id, points_earned, weight)
         
         # Update colony waste amounts based on predicted category
+        print(f"[DEBUG] Getting user {user_id} to update colony waste")
         user = User.get_by_id(user_id)
+        print(f"[DEBUG] User: {user}")
         if user and user.get('colony_id'):
+            print(f"[DEBUG] Calling Colony.add_waste_to_colony({user['colony_id']}, {result['predicted_category']}, {weight})")
             Colony.add_waste_to_colony(user['colony_id'], result['predicted_category'], weight)
+            print(f"[DEBUG] Colony waste update completed")
+        else:
+            print(f"[DEBUG] User has no colony_id! User data: {user}")
         
         return jsonify({
             'classification': result,
