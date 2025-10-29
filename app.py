@@ -78,10 +78,10 @@ app.register_blueprint(migration.bp, url_prefix='/api/migration')
 @app.route('/')
 def home():
     return jsonify({
-        'message': 'SmartWaste360 API - MIGRATION TOOLS v5.6.0',
-        'version': '5.6.0',
+        'message': 'SmartWaste360 API - COLLECTOR DASHBOARD FIX v5.7.0',
+        'version': '5.7.0',
         'status': 'production',
-        'deployment': 'BACKFILL-COLONY-POINTS-AND-WASTE',
+        'deployment': 'COLLECTOR-DASHBOARD-AND-ANALYTICS',
         'timestamp': '2025-10-29',
         'cors_enabled': True,
         'fixes_applied': {
