@@ -52,7 +52,7 @@ def create_directories():
 create_directories()
 
 # --- IMPORT & REGISTER BLUEPRINTS (ROUTES) ---
-from routes import auth, waste, booking, leaderboard, camera, collector, transaction, health, colony, collection_points, admin, analytics, database_debug, diagnostic_fixes
+from routes import auth, waste, booking, leaderboard, camera, collector, transaction, health, colony, collection_points, admin, analytics, database_debug, diagnostic_fixes, debug_logs
 
 app.register_blueprint(auth.bp, url_prefix='/api/auth')
 app.register_blueprint(waste.bp, url_prefix='/api/waste')
@@ -68,6 +68,7 @@ app.register_blueprint(analytics.bp, url_prefix='/api/analytics')
 app.register_blueprint(health.bp, url_prefix='/health')
 app.register_blueprint(database_debug.bp, url_prefix='/api/database-debug')
 app.register_blueprint(diagnostic_fixes.bp, url_prefix='/api/fixes')
+app.register_blueprint(debug_logs.bp, url_prefix='/api/debug')
 
 # Advanced features temporarily disabled for debugging
 # app.register_blueprint(advanced_features.bp, url_prefix='/api/advanced')
@@ -76,11 +77,11 @@ app.register_blueprint(diagnostic_fixes.bp, url_prefix='/api/fixes')
 @app.route('/')
 def home():
     return jsonify({
-        'message': 'SmartWaste360 API - DEBUG LOGGING v5.3.0',
-        'version': '5.3.0',
+        'message': 'SmartWaste360 API - DEBUG LOGGING v5.4.0',
+        'version': '5.4.0',
         'status': 'production',
-        'deployment': 'DEBUG-COLONY-WASTE-ISSUE',
-        'timestamp': '2025-10-27',
+        'deployment': 'IN-MEMORY-LOG-CAPTURE',
+        'timestamp': '2025-10-29',
         'cors_enabled': True,
         'fixes_applied': {
             'waste_classification': 'ML determines waste_type (not always dry)',
@@ -92,9 +93,11 @@ def home():
         'diagnostic_endpoints': {
             'diagnose_all': '/api/fixes/diagnose-all-issues',
             'seed_collection_points': '/api/fixes/seed-collection-points',
-            'full_diagnostic': '/api/database-debug/full-diagnostic'
+            'full_diagnostic': '/api/database-debug/full-diagnostic',
+            'recent_logs': '/api/debug/recent-logs',
+            'clear_logs': '/api/debug/clear-logs'
         },
-        'render_wake_up': 'ALL_CRITICAL_FIXES_DEPLOYED'
+        'render_wake_up': 'LOG_CAPTURE_ENABLED'
     })
 
 @app.route('/health')

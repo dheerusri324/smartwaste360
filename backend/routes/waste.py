@@ -12,6 +12,7 @@ from services.points_service import PointsService
 from models.waste import WasteLog
 from models.user import User
 from models.colony import Colony
+from utils.log_capture import log_capture
 
 bp = Blueprint('waste', __name__)
 
@@ -47,15 +48,18 @@ def classify_waste_route():
         filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
         
-        # Debug logging
+        # Debug logging with capture
+        log_capture.add('DEBUG', f"Classifying waste: weight={weight}, waste_type={waste_type}", user_id=user_id)
         print(f"[DEBUG] Classifying waste: weight={weight}, waste_type={waste_type}")
         
         result = ml_service.classify_waste(filepath, weight, waste_type)
         
+        log_capture.add('DEBUG', f"ML service result: {result}", user_id=user_id)
         print(f"[DEBUG] ML service result: {result}")
         
         # Debug: Check if result has the expected structure
         if 'predicted_category' not in result:
+            log_capture.add('ERROR', f"ML service result missing 'predicted_category': {result}", user_id=user_id)
             print(f"ERROR: ML service result missing 'predicted_category': {result}")
             return jsonify({'error': f'ML service error: missing predicted_category in result: {result}'}), 500
         
@@ -74,14 +78,21 @@ def classify_waste_route():
         User.update_user_points(user_id, points_earned, weight)
         
         # Update colony waste amounts based on predicted category
+        log_capture.add('DEBUG', f"Getting user {user_id} to update colony waste", user_id=user_id)
         print(f"[DEBUG] Getting user {user_id} to update colony waste")
         user = User.get_by_id(user_id)
+        log_capture.add('DEBUG', f"User data: colony_id={user.get('colony_id') if user else None}", user_id=user_id, user_data=user)
         print(f"[DEBUG] User: {user}")
         if user and user.get('colony_id'):
+            log_capture.add('DEBUG', f"Calling Colony.add_waste_to_colony({user['colony_id']}, {result['predicted_category']}, {weight})", 
+                          user_id=user_id, colony_id=user['colony_id'], category=result['predicted_category'], weight=weight)
             print(f"[DEBUG] Calling Colony.add_waste_to_colony({user['colony_id']}, {result['predicted_category']}, {weight})")
             Colony.add_waste_to_colony(user['colony_id'], result['predicted_category'], weight)
+            log_capture.add('INFO', f"Added {weight}kg of {result['predicted_category']} to colony {user['colony_id']}", 
+                          user_id=user_id, colony_id=user['colony_id'])
             print(f"[DEBUG] Colony waste update completed")
         else:
+            log_capture.add('WARNING', f"User has no colony_id! Cannot update colony waste", user_id=user_id, user_data=user)
             print(f"[DEBUG] User has no colony_id! User data: {user}")
         
         return jsonify({
