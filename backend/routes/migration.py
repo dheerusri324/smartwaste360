@@ -297,6 +297,60 @@ def fix_collector_bookings():
             'error': str(e)
         }), 500
 
+@bp.route('/create-missing-collectors', methods=['POST'])
+def create_missing_collectors():
+    """Create collector records for orphaned bookings"""
+    try:
+        with get_db() as db:
+            if not db:
+                return jsonify({'error': 'Database connection not available'}), 500
+            
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Find collector IDs in bookings that don't exist in collectors table
+                cursor.execute("""
+                    SELECT DISTINCT cb.collector_id
+                    FROM collection_bookings cb
+                    LEFT JOIN collectors c ON cb.collector_id = c.collector_id
+                    WHERE c.collector_id IS NULL
+                """)
+                
+                missing_collectors = cursor.fetchall()
+                
+                if not missing_collectors:
+                    return jsonify({
+                        'status': 'success',
+                        'message': 'No missing collectors found',
+                        'collectors_created': 0
+                    })
+                
+                # Create each missing collector
+                created = []
+                for row in missing_collectors:
+                    collector_id = row['collector_id']
+                    
+                    cursor.execute("""
+                        INSERT INTO collectors (collector_id, name, email, phone, total_weight_collected)
+                        VALUES (%s, %s, %s, %s, 0)
+                        ON CONFLICT (collector_id) DO NOTHING
+                    """, (collector_id, f"{collector_id.title()} Collector", f"{collector_id}@collector.com", "0000000000"))
+                    
+                    created.append(collector_id)
+                
+                db.commit()
+                
+                return jsonify({
+                    'status': 'success',
+                    'message': f'Created {len(created)} missing collectors',
+                    'collectors_created': created
+                }), 200
+                
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        }), 500
+
 @bp.route('/check-collector-data', methods=['GET'])
 def check_collector_data():
     """Check actual collector data for debugging"""
