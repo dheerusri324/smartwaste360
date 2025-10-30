@@ -3,7 +3,7 @@
 One-time migration scripts to fix historical data
 """
 
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from config.database import get_db
 from psycopg2.extras import RealDictCursor
 import traceback
