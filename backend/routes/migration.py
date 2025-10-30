@@ -351,6 +351,70 @@ def create_missing_collectors():
             'error': str(e)
         }), 500
 
+@bp.route('/list-all-collectors', methods=['GET'])
+def list_all_collectors():
+    """List all collectors in database"""
+    try:
+        with get_db() as db:
+            if not db:
+                return jsonify({'error': 'Database connection not available'}), 500
+            
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute("""
+                    SELECT collector_id, name, email, total_weight_collected
+                    FROM collectors
+                    ORDER BY collector_id
+                """)
+                collectors = cursor.fetchall()
+                
+                return jsonify({
+                    'status': 'success',
+                    'total_collectors': len(collectors),
+                    'collectors': [dict(c) for c in collectors]
+                }), 200
+                
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        }), 500
+
+@bp.route('/list-all-bookings', methods=['GET'])
+def list_all_bookings():
+    """List all bookings in database"""
+    try:
+        with get_db() as db:
+            if not db:
+                return jsonify({'error': 'Database connection not available'}), 500
+            
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute("""
+                    SELECT 
+                        booking_id,
+                        collector_id,
+                        colony_id,
+                        status,
+                        total_weight_collected,
+                        completed_at
+                    FROM collection_bookings
+                    ORDER BY booking_id DESC
+                """)
+                bookings = cursor.fetchall()
+                
+                return jsonify({
+                    'status': 'success',
+                    'total_bookings': len(bookings),
+                    'bookings': [dict(b) for b in bookings]
+                }), 200
+                
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        }), 500
+
 @bp.route('/check-collector-data', methods=['GET'])
 def check_collector_data():
     """Check actual collector data for debugging"""
