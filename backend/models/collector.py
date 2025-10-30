@@ -165,12 +165,20 @@ class Collector:
     def get_all_collectors():
         """Get all collectors for admin management"""
         sql = """
-            SELECT collector_id, name, phone, email, vehicle_number, 
-                   is_active, created_at,
-                   0 as total_weight_collected,
-                   0 as total_collections
-            FROM collectors
-            ORDER BY created_at DESC
+            SELECT 
+                c.collector_id, 
+                c.name, 
+                c.phone, 
+                c.email, 
+                c.vehicle_number, 
+                c.is_active, 
+                c.created_at,
+                COALESCE(c.total_weight_collected, 0) as total_weight_collected,
+                COUNT(cb.booking_id) FILTER (WHERE cb.status = 'completed') as total_collections
+            FROM collectors c
+            LEFT JOIN collection_bookings cb ON c.collector_id = cb.collector_id
+            GROUP BY c.collector_id, c.name, c.phone, c.email, c.vehicle_number, c.is_active, c.created_at, c.total_weight_collected
+            ORDER BY c.created_at DESC
         """
         with get_db() as db:
             if not db: raise ConnectionError("Database connection not available.")

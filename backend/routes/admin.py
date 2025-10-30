@@ -169,6 +169,57 @@ def get_all_collectors():
         traceback.print_exc()
         return jsonify({'error': 'An internal server error occurred'}), 500
 
+@bp.route('/collectors', methods=['POST'])
+@jwt_required()
+def create_collector():
+    """Create a new collector"""
+    try:
+        claims = get_jwt()
+        if claims.get('role') != 'admin':
+            return jsonify({"msg": "Access denied: Admin access required"}), 403
+
+        data = request.get_json()
+        
+        # Validate required fields
+        required_fields = ['name', 'email', 'phone', 'password']
+        for field in required_fields:
+            if not data.get(field):
+                return jsonify({'error': f'{field} is required'}), 400
+        
+        # Generate collector ID
+        from config.database import get_db
+        from psycopg2.extras import RealDictCursor
+        import bcrypt
+        
+        with get_db() as db:
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Get next collector ID
+                cursor.execute("SELECT COUNT(*) as count FROM collectors")
+                count = cursor.fetchone()['count']
+                collector_id = f"COL{str(count + 1).zfill(3)}"
+                
+                # Hash password
+                password_hash = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                
+                # Insert collector
+                cursor.execute("""
+                    INSERT INTO collectors (collector_id, name, email, phone, password_hash, vehicle_number, is_active)
+                    VALUES (%s, %s, %s, %s, %s, %s, TRUE)
+                    RETURNING collector_id, name, email, phone, vehicle_number, is_active
+                """, (collector_id, data['name'], data['email'], data['phone'], password_hash, data.get('vehicle_number', 'N/A')))
+                
+                new_collector = cursor.fetchone()
+                db.commit()
+                
+                return jsonify({
+                    'message': 'Collector created successfully',
+                    'collector': dict(new_collector)
+                }), 201
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': f'Failed to create collector: {str(e)}'}), 500
+
 @bp.route('/collectors/<collector_id>/status', methods=['PUT'])
 @jwt_required()
 def update_collector_status(collector_id):
