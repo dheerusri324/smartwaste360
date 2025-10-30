@@ -109,7 +109,7 @@ const CollectorStatsWidget = () => {
         {/* Weight */}
         <div className="text-center p-3 bg-gray-50 rounded-lg">
           <Scale className="h-6 w-6 text-emerald-600 mx-auto mb-2" />
-          <p className="text-xl font-bold text-gray-900">{formatWeight(summary?.current_period?.weight_collected || 0)}</p>
+          <p className="text-xl font-bold text-gray-900">{formatWeight(summary?.current_period?.weight || summary?.current_period?.weight_collected || summary?.total_weight_collected || 0)}</p>
           <p className="text-xs text-gray-600">Weight Collected</p>
           {formatGrowth(summary?.growth_metrics?.weight_growth_percent || 0)}
         </div>
