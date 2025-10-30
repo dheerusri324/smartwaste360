@@ -380,6 +380,28 @@ def list_all_collectors():
             'error': str(e)
         }), 500
 
+@bp.route('/check-ready-colonies', methods=['GET'])
+def check_ready_colonies():
+    """Check which colonies are ready for collection"""
+    try:
+        from models.colony import Colony
+        
+        # Get all ready colonies
+        ready_colonies = Colony.get_colonies_ready_for_collection_by_type()
+        
+        return jsonify({
+            'status': 'success',
+            'total_ready': len(ready_colonies),
+            'ready_colonies': [dict(c) for c in ready_colonies]
+        }), 200
+        
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        }), 500
+
 @bp.route('/list-all-bookings', methods=['GET'])
 def list_all_bookings():
     """List all bookings in database"""
