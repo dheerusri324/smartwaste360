@@ -297,6 +297,64 @@ def fix_collector_bookings():
             'error': str(e)
         }), 500
 
+@bp.route('/check-collector-data', methods=['GET'])
+def check_collector_data():
+    """Check actual collector data for debugging"""
+    try:
+        collector_id = request.args.get('collector_id', 'metal')
+        
+        with get_db() as db:
+            if not db:
+                return jsonify({'error': 'Database connection not available'}), 500
+            
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Get collector info
+                cursor.execute("""
+                    SELECT collector_id, name, total_weight_collected
+                    FROM collectors
+                    WHERE collector_id = %s
+                """, (collector_id,))
+                collector = cursor.fetchone()
+                
+                # Get all bookings
+                cursor.execute("""
+                    SELECT 
+                        booking_id,
+                        colony_id,
+                        status,
+                        total_weight_collected,
+                        completed_at,
+                        created_at
+                    FROM collection_bookings
+                    WHERE collector_id = %s
+                    ORDER BY created_at DESC
+                """, (collector_id,))
+                bookings = cursor.fetchall()
+                
+                # Calculate sum
+                total_from_bookings = sum(
+                    float(b['total_weight_collected'] or 0) 
+                    for b in bookings 
+                    if b['status'] == 'completed'
+                )
+                
+                return jsonify({
+                    'status': 'success',
+                    'collector': dict(collector) if collector else None,
+                    'bookings': [dict(b) for b in bookings],
+                    'total_bookings': len(bookings),
+                    'completed_bookings': len([b for b in bookings if b['status'] == 'completed']),
+                    'total_weight_from_bookings': total_from_bookings,
+                    'collector_total_weight': float(collector['total_weight_collected'] or 0) if collector else 0
+                }), 200
+                
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'error': str(e)
+        }), 500
+
 @bp.route('/sync-collector-stats', methods=['POST'])
 def sync_collector_stats():
     """Sync collector total_weight_collected from completed bookings"""
