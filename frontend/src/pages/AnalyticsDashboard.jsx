@@ -273,9 +273,9 @@ const AnalyticsDashboard = () => {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium">{formatWeight(activity.weight_collected || activity.total_weight_collected || 0)}</p>
+                  <p className="text-sm font-medium">{formatWeight(activity.weight || activity.weight_collected || activity.total_weight_collected || 0)}</p>
                   <p className="text-xs text-gray-500">
-                    {activity.time_ago || new Date(activity.completed_at).toLocaleTimeString()}
+                    {activity.time_ago || (activity.time || activity.completed_at ? new Date(activity.time || activity.completed_at).toLocaleTimeString() : 'N/A')}
                   </p>
                 </div>
               </div>

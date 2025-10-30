@@ -167,6 +167,22 @@ def get_collector_summary():
                 """, (collector_id,))
                 this_month = cursor.fetchone()
         
+        # Calculate efficiency score (weight per collection)
+                week_collections = this_week['collections'] or 0
+                week_weight = float(this_week['weight'] or 0)
+                efficiency_score = round(week_weight / week_collections, 1) if week_collections > 0 else 0
+                
+                # Calculate active days (days with at least one collection in last 7 days)
+                cursor.execute("""
+                    SELECT COUNT(DISTINCT DATE(completed_at)) as active_days
+                    FROM collection_bookings
+                    WHERE collector_id = %s 
+                      AND status = 'completed'
+                      AND completed_at >= NOW() - INTERVAL '7 days'
+                """, (collector_id,))
+                active_days_result = cursor.fetchone()
+                active_days = active_days_result['active_days'] or 0
+        
         return jsonify({
             'success': True,
             'data': {
@@ -176,7 +192,9 @@ def get_collector_summary():
                 'pending_collections': stats['pending_collections'] or 0,
                 'current_period': {
                     'collections': this_week['collections'] or 0,
-                    'weight': float(this_week['weight'] or 0)
+                    'weight': float(this_week['weight'] or 0),
+                    'efficiency_score': efficiency_score,
+                    'active_days': active_days
                 },
                 'growth_metrics': {
                     'collection_growth_percent': 0,
