@@ -23,7 +23,7 @@ def get_collector_performance():
         
         with get_db() as db:
             with db.cursor(cursor_factory=RealDictCursor) as cursor:
-                # Get daily trends
+                # Get daily trends - use proper interval syntax
                 cursor.execute("""
                     SELECT 
                         DATE(completed_at) as collection_date,
@@ -32,7 +32,7 @@ def get_collector_performance():
                     FROM collection_bookings
                     WHERE collector_id = %s 
                       AND status = 'completed'
-                      AND completed_at >= NOW() - INTERVAL '%s days'
+                      AND completed_at >= NOW() - make_interval(days => %s)
                     GROUP BY DATE(completed_at)
                     ORDER BY collection_date DESC
                 """, (collector_id, days))
@@ -41,13 +41,13 @@ def get_collector_performance():
                 # Get waste breakdown
                 cursor.execute("""
                     SELECT 
-                        waste_types_collected as waste_type,
+                        COALESCE(waste_types_collected, 'Mixed') as waste_type,
                         COALESCE(SUM(total_weight_collected), 0) as total_weight,
                         COUNT(*) as collection_count
                     FROM collection_bookings
                     WHERE collector_id = %s 
                       AND status = 'completed'
-                      AND completed_at >= NOW() - INTERVAL '%s days'
+                      AND completed_at >= NOW() - make_interval(days => %s)
                     GROUP BY waste_types_collected
                     ORDER BY total_weight DESC
                 """, (collector_id, days))
@@ -61,7 +61,7 @@ def get_collector_performance():
                     FROM collection_bookings
                     WHERE collector_id = %s 
                       AND status = 'completed'
-                      AND completed_at >= NOW() - INTERVAL '%s days'
+                      AND completed_at >= NOW() - make_interval(days => %s)
                 """, (collector_id, days))
                 totals = cursor.fetchone()
         
@@ -283,10 +283,25 @@ def get_realtime_dashboard():
                     FROM collection_bookings cb
                     JOIN colonies c ON cb.colony_id = c.colony_id
                     WHERE cb.collector_id = %s
-                    ORDER BY cb.created_at DESC
+                    ORDER BY COALESCE(cb.completed_at, cb.created_at) DESC
                     LIMIT 5
                 """, (collector_id,))
                 recent = cursor.fetchall()
+                
+                # Get ready colonies count
+                cursor.execute("""
+                    SELECT COUNT(*) as ready_count
+                    FROM colonies c
+                    LEFT JOIN collection_bookings cb ON c.colony_id = cb.colony_id AND cb.status = 'scheduled'
+                    WHERE (c.current_plastic_kg >= 5 
+                       OR c.current_paper_kg >= 5 
+                       OR c.current_metal_kg >= 1 
+                       OR c.current_glass_kg >= 2 
+                       OR c.current_textile_kg >= 1 
+                       OR c.current_dry_waste_kg >= 10)
+                    AND cb.booking_id IS NULL
+                """)
+                ready_colonies = cursor.fetchone()
         
         return jsonify({
             'success': True,
@@ -295,6 +310,7 @@ def get_realtime_dashboard():
                 'total_weight_today': float(today['todays_weight'] or 0),
                 'active_collectors': 1,
                 'pending_requests': pending['pending_requests'] or 0,
+                'ready_colonies_count': ready_colonies['ready_count'] or 0,
                 'today_stats': {
                     'todays_collections': today['todays_collections'] or 0,
                     'todays_weight': float(today['todays_weight'] or 0),
@@ -306,7 +322,8 @@ def get_realtime_dashboard():
                         'colony_name': row['colony_name'],
                         'status': row['status'],
                         'weight': float(row['total_weight_collected'] or 0),
-                        'time': row['completed_at'].isoformat() if row['completed_at'] else None
+                        'time': row['completed_at'].isoformat() if row['completed_at'] else None,
+                        'completed_at': row['completed_at'].isoformat() if row['completed_at'] else None
                     }
                     for row in recent
                 ],

@@ -140,8 +140,8 @@ const AnalyticsDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Weight Collected</p>
-                <p className="text-2xl font-bold text-gray-900">{formatWeight(summary.current_period.weight_collected)}</p>
-                {formatGrowth(summary.growth_metrics.weight_growth_percent)}
+                <p className="text-2xl font-bold text-gray-900">{formatWeight(summary.current_period?.weight || summary.current_period?.weight_collected || summary.total_weight_collected || 0)}</p>
+                {formatGrowth(summary.growth_metrics?.weight_growth_percent)}
               </div>
               <Scale className="h-8 w-8 text-emerald-600" />
             </div>
@@ -151,8 +151,8 @@ const AnalyticsDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Efficiency Score</p>
-                <p className="text-2xl font-bold text-gray-900">{summary.current_period.efficiency_score}</p>
-                <p className="text-xs text-gray-500">Out of 100</p>
+                <p className="text-2xl font-bold text-gray-900">{summary.current_period?.efficiency_score || 0}</p>
+                <p className="text-xs text-gray-500">kg/collection</p>
               </div>
               <Zap className="h-8 w-8 text-emerald-600" />
             </div>
@@ -162,7 +162,7 @@ const AnalyticsDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Days</p>
-                <p className="text-2xl font-bold text-gray-900">{summary.current_period.active_days}</p>
+                <p className="text-2xl font-bold text-gray-900">{summary.current_period?.active_days || 0}</p>
                 <p className="text-xs text-gray-500">Last 7 days</p>
               </div>
               <Calendar className="h-8 w-8 text-emerald-600" />
