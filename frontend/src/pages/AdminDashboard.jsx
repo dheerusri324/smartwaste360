@@ -214,18 +214,6 @@ const AdminDashboard = () => {
             </button>
           </div>
 
-      {/* Debug Info */}
-      {overviewData && (
-        <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg">
-          <h3 className="font-semibold text-yellow-800">Debug Info (Remove in production)</h3>
-          <p className="text-sm text-yellow-700">
-            Collections: {overviewData?.overview?.total_collections_completed || 'undefined'} | 
-            Weight: {overviewData?.overview?.total_weight_collected || 'undefined'} | 
-            Users: {overviewData?.overview?.total_users || 'undefined'}
-          </p>
-        </div>
-      )}
-
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg shadow-sm border p-6">
