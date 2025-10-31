@@ -13,7 +13,7 @@
 4. Click **Add Environment Variable**
 5. Add:
    - Key: `GEMINI_API_KEY`
-   - Value: `AIzaSyDBxI2tlFr4c_3u3hiaD5HkZuVgUFewlL0`
+   - Value: `your-gemini-api-key-here`
 6. Click **Save Changes**
 7. Render will automatically redeploy
 

@@ -154,7 +154,7 @@ Look for your colony's waste amounts.
 1. Go to Render dashboard
 2. Click your backend service
 3. Environment tab
-4. Add: `GEMINI_API_KEY` = `AIzaSyDBxI2tlFr4c_3u3hiaD5HkZuVgUFewlL0`
+4. Add: `GEMINI_API_KEY` = `your-gemini-api-key-here`
 5. Save (will auto-redeploy)
 
 ### Issue 3: Colony Waste Not Updating
