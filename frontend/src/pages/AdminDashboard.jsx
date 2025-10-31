@@ -176,7 +176,39 @@ const AdminDashboard = () => {
               <h2 className="text-2xl font-bold text-gray-900">Collector Management</h2>
               <p className="text-gray-600">Manage waste collectors and their activities</p>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700">
+            <button 
+              onClick={() => {
+                const name = prompt("Collector Name:");
+                if (!name) return;
+                const email = prompt("Email:");
+                if (!email) return;
+                const phone = prompt("Phone:");
+                if (!phone) return;
+                const password = prompt("Password:");
+                if (!password) return;
+                
+                // Call API to create collector
+                fetch(`${process.env.REACT_APP_API_URL || 'https://smartwaste360-backend.onrender.com/api'}/admin/collectors`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                  },
+                  body: JSON.stringify({ name, email, phone, password })
+                })
+                .then(res => res.json())
+                .then(data => {
+                  if (data.error) {
+                    alert(`Error: ${data.error}`);
+                  } else {
+                    alert(`Collector created successfully! ID: ${data.collector.collector_id}`);
+                    window.location.reload();
+                  }
+                })
+                .catch(err => alert(`Failed to create collector: ${err.message}`));
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+            >
               <Plus size={20} />
               Add New Collector
             </button>

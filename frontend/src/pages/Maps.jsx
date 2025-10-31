@@ -73,7 +73,11 @@ const Maps = () => {
           colony_name: 'Admin View',
           colony_id: null
         });
+        setLocationLoading(false);
         console.log('Admin user - using default location');
+      } else {
+        // No user or unknown role
+        setLocationLoading(false);
       }
     };
 
