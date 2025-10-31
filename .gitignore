@@ -26,11 +26,25 @@ venv/
 ENV/
 env/
 
-# Environment Variables
+# Environment Variables - NEVER commit these!
 .env
+.env.*
+!.env.example
+*.env
 .env.local
 .env.production
 .env.development
+.env.staging
+.env.test
+
+# API Keys and Secrets
+**/secrets/
+**/credentials/
+*.pem
+*.key
+*.cert
+config/secrets.yml
+config/credentials.yml
 
 # Database
 *.db
@@ -71,4 +85,14 @@ railway-deploy/
 # Temporary files
 tmp/
 temp/
-node_modules
+
+# Backup files that might contain sensitive data
+*.bak
+*.backup
+*.old
+*_backup
+*_old
+
+# Documentation with sensitive info (if needed, create sanitized versions)
+*-PRIVATE.md
+*-SECRET.md

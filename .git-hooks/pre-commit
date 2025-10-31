@@ -1,0 +1,49 @@
+#!/bin/sh
+# Pre-commit hook to prevent committing secrets
+
+echo "🔍 Checking for secrets before commit..."
+
+# Patterns to search for
+PATTERNS=(
+    "AIza[0-9A-Za-z_-]{35}"  # Google API keys
+    "sk-[0-9A-Za-z]{48}"      # OpenAI keys
+    "AKIA[0-9A-Z]{16}"        # AWS keys
+    "password\s*=\s*['\"][^'\"]{8,}"
+    "api_key\s*=\s*['\"][^'\"]{8,}"
+    "secret\s*=\s*['\"][^'\"]{8,}"
+)
+
+# Files to check
+FILES=$(git diff --cached --name-only --diff-filter=ACM)
+
+FOUND_SECRET=0
+
+for FILE in $FILES; do
+    # Skip binary files
+    if file "$FILE" | grep -q "text"; then
+        for PATTERN in "${PATTERNS[@]}"; do
+            if grep -qE "$PATTERN" "$FILE"; then
+                echo "❌ Potential secret found in: $FILE"
+                echo "   Pattern: $PATTERN"
+                FOUND_SECRET=1
+            fi
+        done
+    fi
+done
+
+if [ $FOUND_SECRET -eq 1 ]; then
+    echo ""
+    echo "🚨 COMMIT BLOCKED: Potential secrets detected!"
+    echo ""
+    echo "Please:"
+    echo "1. Remove the secrets from your files"
+    echo "2. Use environment variables instead"
+    echo "3. Add sensitive files to .gitignore"
+    echo ""
+    echo "To bypass this check (NOT recommended):"
+    echo "git commit --no-verify"
+    exit 1
+fi
+
+echo "✅ No secrets detected. Proceeding with commit."
+exit 0
