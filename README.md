@@ -63,16 +63,16 @@
 
 ### **Backend**
 - 🐍 Python Flask REST API
-- 🤖 TensorFlow/Keras for AI models
+- 🤖 Google Gemini AI for waste classification
 - 🗄️ PostgreSQL database
-- 🔒 JWT security
+- 🔒 JWT authentication & security
 - 📡 Real-time data processing
 
 ### **Deployment**
-- 🌐 Frontend: Vercel
-- 🔧 Backend: Render
-- 🗄️ Database: Render PostgreSQL
-- 🚀 CI/CD: GitHub integration
+- 🌐 **Frontend**: Vercel (Auto-deploy from GitHub)
+- 🔧 **Backend**: Render (Auto-deploy from GitHub)
+- 🗄️ **Database**: Render PostgreSQL
+- 🤖 **AI/ML**: Google Gemini API for waste classification
 
 ## 📱 **Mobile Responsive**
 Fully optimized for mobile devices with touch-friendly interfaces and camera integration.
@@ -84,8 +84,10 @@ SmartWaste360 helps communities:
 - 📈 Track recycling progress
 - 🌱 Reduce environmental footprint
 
-## 🤝 **Contributing**
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+## 🔒 **Security**
+- API keys managed via environment variables
+- Secure authentication with JWT tokens
+- See [SECURITY.md](SECURITY.md) for security guidelines
 
 ## 📄 **License**
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
