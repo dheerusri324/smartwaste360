@@ -82,15 +82,10 @@ verify-clean-database.ps1
 
 # Deployment configs for other platforms
 .vercelignore
-.railwayignore
 .dockerignore
 vercel.json
 vercel-backend.json
-railway.json
 Dockerfile
-
-# Railway deployment folder
-railway-deploy/
 
 # Database files (use Render's managed database)
 database/

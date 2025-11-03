@@ -16,8 +16,6 @@ tests/
 uploads/
 ml-model/
 database/
-railway-deploy/
-.railway/
 *.md
 !frontend/
 

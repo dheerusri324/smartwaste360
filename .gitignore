@@ -79,9 +79,6 @@ Thumbs.db
 backend/uploads/
 uploads/
 
-# Railway deployment directory
-railway-deploy/
-
 # Temporary files
 tmp/
 temp/

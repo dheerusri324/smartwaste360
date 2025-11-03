@@ -17,7 +17,7 @@ if dotenv_path.exists():
 DATABASE_URL = os.getenv('DATABASE_URL')
 
 if DATABASE_URL:
-    # Use Railway's DATABASE_URL if available
+    # Use DATABASE_URL from environment (Render or other platforms)
     connection_string = DATABASE_URL
     print(f"[INFO] Using DATABASE_URL for connection")
 else:
