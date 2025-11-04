@@ -193,20 +193,36 @@ def create_collector():
         
         with get_db() as db:
             with db.cursor(cursor_factory=RealDictCursor) as cursor:
-                # Get next collector ID
-                cursor.execute("SELECT COUNT(*) as count FROM collectors")
-                count = cursor.fetchone()['count']
-                collector_id = f"COL{str(count + 1).zfill(3)}"
+                # Check if collector_id column is auto-increment or manual
+                cursor.execute("""
+                    SELECT column_default 
+                    FROM information_schema.columns 
+                    WHERE table_name = 'collectors' AND column_name = 'collector_id'
+                """)
+                col_info = cursor.fetchone()
+                is_auto_increment = col_info and col_info['column_default'] and 'nextval' in col_info['column_default']
                 
                 # Hash password
                 password_hash = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
                 
-                # Insert collector
-                cursor.execute("""
-                    INSERT INTO collectors (collector_id, name, email, phone, password_hash, vehicle_number, is_active)
-                    VALUES (%s, %s, %s, %s, %s, %s, TRUE)
-                    RETURNING collector_id, name, email, phone, vehicle_number, is_active
-                """, (collector_id, data['name'], data['email'], data['phone'], password_hash, data.get('vehicle_number', 'N/A')))
+                if is_auto_increment:
+                    # Let database auto-generate collector_id
+                    cursor.execute("""
+                        INSERT INTO collectors (name, email, phone, password_hash, vehicle_number, is_active)
+                        VALUES (%s, %s, %s, %s, %s, TRUE)
+                        RETURNING collector_id, name, email, phone, vehicle_number, is_active
+                    """, (data['name'], data['email'], data['phone'], password_hash, data.get('vehicle_number', 'N/A')))
+                else:
+                    # Generate collector ID manually
+                    cursor.execute("SELECT COUNT(*) as count FROM collectors")
+                    count = cursor.fetchone()['count']
+                    collector_id = f"COL{str(count + 1).zfill(3)}"
+                    
+                    cursor.execute("""
+                        INSERT INTO collectors (collector_id, name, email, phone, password_hash, vehicle_number, is_active)
+                        VALUES (%s, %s, %s, %s, %s, %s, TRUE)
+                        RETURNING collector_id, name, email, phone, vehicle_number, is_active
+                    """, (collector_id, data['name'], data['email'], data['phone'], password_hash, data.get('vehicle_number', 'N/A')))
                 
                 new_collector = cursor.fetchone()
                 db.commit()
