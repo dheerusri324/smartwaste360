@@ -13,13 +13,36 @@ class Collector:
         with get_db() as db:
             if not db: raise ConnectionError("Database connection not available.")
             with db.cursor(cursor_factory=RealDictCursor) as cursor:
-                # Insert the new collector (let database auto-generate collector_id)
-                sql = """
-                    INSERT INTO collectors (name, phone, email, password_hash, vehicle_number)
-                    VALUES (%s, %s, %s, %s, %s) 
-                    RETURNING collector_id
-                """
-                params = (name, phone, email, password_hash, vehicle_number)
+                # Check if collector_id column is auto-increment or manual
+                cursor.execute("""
+                    SELECT column_default 
+                    FROM information_schema.columns 
+                    WHERE table_name = 'collectors' AND column_name = 'collector_id'
+                """)
+                col_info = cursor.fetchone()
+                is_auto_increment = col_info and col_info['column_default'] and 'nextval' in col_info['column_default']
+                
+                if is_auto_increment:
+                    # Let database auto-generate collector_id
+                    sql = """
+                        INSERT INTO collectors (name, phone, email, password_hash, vehicle_number)
+                        VALUES (%s, %s, %s, %s, %s) 
+                        RETURNING collector_id
+                    """
+                    params = (name, phone, email, password_hash, vehicle_number)
+                else:
+                    # Generate collector ID manually
+                    cursor.execute("SELECT COUNT(*) as count FROM collectors")
+                    count = cursor.fetchone()['count']
+                    collector_id = f"COL{str(count + 1).zfill(3)}"
+                    
+                    sql = """
+                        INSERT INTO collectors (collector_id, name, phone, email, password_hash, vehicle_number)
+                        VALUES (%s, %s, %s, %s, %s, %s) 
+                        RETURNING collector_id
+                    """
+                    params = (collector_id, name, phone, email, password_hash, vehicle_number)
+                
                 cursor.execute(sql, params)
                 new_collector = cursor.fetchone()
                 db.commit()
