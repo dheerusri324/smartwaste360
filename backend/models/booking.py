@@ -152,11 +152,9 @@ class Booking:
                     UPDATE collection_bookings 
                     SET status = 'completed', 
                         completed_at = NOW(),
-                        total_weight_collected = %s,
-                        waste_types = %s,
-                        notes = %s
+                        total_weight_collected = %s
                     WHERE booking_id = %s
-                """, (total_weight_collected, waste_types_collected, notes, booking_id))
+                """, (total_weight_collected, booking_id))
                 
                 # Reset colony waste totals for collected waste types
                 reset_updates = []
