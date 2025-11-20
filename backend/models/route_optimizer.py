@@ -268,16 +268,14 @@ class RouteOptimizer:
                     for i, pickup in enumerate(route_pickups):
                         cursor.execute("""
                             INSERT INTO collection_bookings 
-                            (colony_id, collector_id, booking_date, time_slot, route_order, batch_id)
-                            VALUES (%s, %s, %s, %s, %s, %s)
+                            (colony_id, collector_id, booking_date, time_slot, status)
+                            VALUES (%s, %s, %s, %s, 'scheduled')
                             RETURNING booking_id
                         """, (
                             pickup['colony_id'], 
                             collector_id, 
                             booking_date, 
-                            time_slot,
-                            pickup.get('order_in_route', i + 1),
-                            f"batch_{collector_id}_{booking_date}_{time_slot}"
+                            time_slot
                         ))
                         
                         result = cursor.fetchone()
@@ -288,4 +286,5 @@ class RouteOptimizer:
                     
                 except Exception as e:
                     db.rollback()
+                    raise e
                     raise e
