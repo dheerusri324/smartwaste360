@@ -366,13 +366,14 @@ def complete_collection():
         data = request.get_json()
         
         # Validate required fields
-        required_fields = ['colony_id', 'total_weight', 'waste_types']
+        required_fields = ['colony_id']
         if not all(field in data for field in required_fields):
-            return jsonify({'error': 'Missing required fields: colony_id, total_weight, waste_types'}), 400
+            return jsonify({'error': 'Missing required field: colony_id'}), 400
         
         colony_id = data['colony_id']
-        total_weight = float(data['total_weight'])
-        waste_types = data['waste_types']  # Dict with waste type amounts
+        booking_id = data.get('booking_id')
+        total_weight = float(data.get('total_weight', 0))
+        waste_types = data.get('waste_types', {})  # Dict with waste type amounts
         notes = data.get('notes', '')
         
         # Simplified approach - just update colony waste amounts
@@ -437,6 +438,16 @@ def complete_collection():
                     WHERE collector_id = %s
                 """, (total_weight, collector_id))
                 
+                # Update booking status if booking_id provided
+                if booking_id:
+                    cursor.execute("""
+                        UPDATE collection_bookings
+                        SET status = 'completed',
+                            completed_at = CURRENT_TIMESTAMP,
+                            total_weight_collected = %s
+                        WHERE booking_id = %s AND collector_id = %s
+                    """, (total_weight, booking_id, collector_id))
+                
                 db.commit()
                 
                 return jsonify({
@@ -450,4 +461,6 @@ def complete_collection():
     except Exception as e:
         import traceback
         traceback.print_exc()
+        print(f"[ERROR] Collection completion failed: {str(e)}")
+        print(f"[ERROR] Data received: {data if 'data' in locals() else 'No data'}")
         return jsonify({'error': f'Collection completion failed: {str(e)}'}), 500
