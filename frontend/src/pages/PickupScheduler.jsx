@@ -179,11 +179,11 @@ const PickupScheduler = () => {
                 <option value="">Select time slot</option>
                 {availableTimeSlots.map(slot => (
                   <option 
-                    key={slot.slot} 
-                    value={slot.slot}
+                    key={slot.time} 
+                    value={slot.time}
                     disabled={!slot.available}
                   >
-                    {slot.label} {!slot.available && '(Fully booked)'}
+                    {slot.time} {!slot.available && '(Fully booked)'}
                   </option>
                 ))}
               </select>
