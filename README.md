@@ -1,6 +1,6 @@
 # 🌍 SmartWaste360 - AI-Powered Waste Management Platform
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-🚀%20Visit%20Now-brightgreen)](https://smartwaste360-frontend-m0nsfg3ki-121012dheeraj-8860s-projects.vercel.app)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-🚀%20Visit%20Now-brightgreen)](https://smartwaste360-frontend.vercel.app/)
 [![Backend API](https://img.shields.io/badge/API-🔧%20Live%20Backend-blue)](https://smartwaste360-backend.onrender.com)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -9,7 +9,7 @@
 ## 🎯 **LIVE APPLICATION**
 
 ### 🌐 **Production URLs:**
-- **🚀 Frontend Application**: [https://smartwaste360-frontend-m0nsfg3ki-121012dheeraj-8860s-projects.vercel.app](https://smartwaste360-frontend-m0nsfg3ki-121012dheeraj-8860s-projects.vercel.app)
+- **🚀 Frontend Application**: [https://smartwaste360-frontend.vercel.app/](https://smartwaste360-frontend.vercel.app/)
 - **🔧 Backend API**: [https://smartwaste360-backend.onrender.com](https://smartwaste360-backend.onrender.com)
 - **📊 API Health Check**: [https://smartwaste360-backend.onrender.com/health](https://smartwaste360-backend.onrender.com/health)
 
