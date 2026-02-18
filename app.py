@@ -103,8 +103,13 @@ else:
     print("🔒 PRODUCTION MODE: Debug and setup endpoints are DISABLED")
 
 # --- VALIDATE PRODUCTION CONFIG ---
-from config import Config
-Config.validate_production()
+# NOTE: We use importlib because both backend/config.py and backend/config/
+# (package) exist, causing a naming conflict. This ensures we load config.py.
+import importlib.util
+_config_spec = importlib.util.spec_from_file_location("app_config", str(backend_path / "config.py"))
+_config_mod = importlib.util.module_from_spec(_config_spec)
+_config_spec.loader.exec_module(_config_mod)
+_config_mod.Config.validate_production()
 
 # --- RUN THE APP ---
 if __name__ == '__main__':
