@@ -119,7 +119,7 @@
 - 📈 Continuous improvement through usage patterns
 
 ### **Current Limitations**
-- 🌐 Requires internet connectivity for AI classification
+- 🌐 Requires internet connectivity for AI classification 
 - 📸 Image quality affects classification accuracy
 - 🔄 Model accuracy depends on lighting and image clarity
 - 💡 Best results with clear, well-lit photos of single items

@@ -4,8 +4,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
-    SECRET_KEY = os.getenv('SECRET_KEY', '9Kav+QSIYrPNr5HzOyHumTLief4bL/tq/hZ9rXrv2qsnOEWChVOXDtn3itAaizUba6KpZ6fUpvgo6PRez8qiBw==')
-    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'yWpOapJ/6SVTxf8SaHukTm2xWkbxSO6/sY+It/T7wJ3OCVUBJfHYHSjT27L3JAaAHo5+WmKCyMX1jsmqprhZaw==')
+    # SECURITY: Use env vars for all secrets. Dev defaults are NOT real credentials.
+    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-only-insecure-key-change-in-production')
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'dev-only-insecure-jwt-key-change-in-production')
     JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 86400))  # 24 hours in seconds
     
     # Database configuration
@@ -13,7 +14,19 @@ class Config:
     DB_PORT = os.getenv('DB_PORT', '5432')
     DB_NAME = os.getenv('DB_NAME', 'smartwaste360')
     DB_USER = os.getenv('DB_USER', 'postgres')
-    DB_PASSWORD = os.getenv('DB_PASSWORD', 'dheerusri')
+    DB_PASSWORD = os.getenv('DB_PASSWORD', '')
+
+    @staticmethod
+    def validate_production():
+        """Raise error if critical env vars are missing in production."""
+        if os.getenv('FLASK_ENV') == 'production':
+            required = ['SECRET_KEY', 'JWT_SECRET_KEY', 'DATABASE_URL']
+            missing = [v for v in required if not os.getenv(v)]
+            if missing:
+                raise RuntimeError(
+                    f"SECURITY ERROR: Missing required env vars for production: {missing}. "
+                    f"Set them in your hosting platform's environment variables."
+                )
     
     # File upload
     UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', 'uploads')

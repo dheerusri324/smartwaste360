@@ -42,7 +42,7 @@ const AppRoutes = () => (
     </Route>
 
     {/* Protected Routes for the User Dashboard (uses DashboardLayout) */}
-    <Route element={<ProtectedRoute><DashboardLayout><Outlet /></DashboardLayout></ProtectedRoute>}>
+    <Route element={<ProtectedRoute allowedRoles={['user']}><DashboardLayout><Outlet /></DashboardLayout></ProtectedRoute>}>
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/dashboard/stats" element={<StatsPage />} />
       <Route path="/dashboard/history" element={<WasteHistoryPage />} />
@@ -57,11 +57,11 @@ const AppRoutes = () => (
       
       {/* Protected routes that use the MainLayout */}
       <Route path="/camera" element={<ProtectedRoute><Camera /></ProtectedRoute>} />
-      <Route path="/collector/dashboard" element={<ProtectedRoute><CollectorDashboard /></ProtectedRoute>} />
-      <Route path="/collector/settings" element={<ProtectedRoute><CollectorSettings /></ProtectedRoute>} />
-      <Route path="/collector/scheduler" element={<ProtectedRoute><PickupScheduler /></ProtectedRoute>} />
-      <Route path="/collector/analytics" element={<ProtectedRoute><AnalyticsDashboard /></ProtectedRoute>} />
-      <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/collector/dashboard" element={<ProtectedRoute allowedRoles={['collector']}><CollectorDashboard /></ProtectedRoute>} />
+      <Route path="/collector/settings" element={<ProtectedRoute allowedRoles={['collector']}><CollectorSettings /></ProtectedRoute>} />
+      <Route path="/collector/scheduler" element={<ProtectedRoute allowedRoles={['collector']}><PickupScheduler /></ProtectedRoute>} />
+      <Route path="/collector/analytics" element={<ProtectedRoute allowedRoles={['collector']}><AnalyticsDashboard /></ProtectedRoute>} />
+      <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={['admin']}><AdminDashboard /></ProtectedRoute>} />
 
       {/* This is the catch-all route for pages that don't exist */}
       <Route path="*" element={<NotFound />} />

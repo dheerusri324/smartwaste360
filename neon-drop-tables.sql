@@ -1,0 +1,16 @@
+-- Drop all tables and views (run this first)
+DROP VIEW IF EXISTS user_leaderboard CASCADE;
+DROP VIEW IF EXISTS colony_leaderboard CASCADE;
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS user_transactions CASCADE;
+DROP TABLE IF EXISTS collection_bookings CASCADE;
+DROP TABLE IF EXISTS waste_logs CASCADE;
+DROP TABLE IF EXISTS collection_points CASCADE;
+DROP TABLE IF EXISTS collectors CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS colonies CASCADE;
+DROP TABLE IF EXISTS points_config CASCADE;
+DROP TABLE IF EXISTS admins CASCADE;
+DROP TYPE IF EXISTS waste_type_enum CASCADE;
+DROP TYPE IF EXISTS status_enum CASCADE;
+DROP TYPE IF EXISTS notification_type_enum CASCADE;
