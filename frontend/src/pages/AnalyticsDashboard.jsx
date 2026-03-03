@@ -207,17 +207,25 @@ const AnalyticsDashboard = () => {
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Daily Performance Trend</h3>
             <div className="space-y-3">
-              {(performance.daily_trends || []).slice(0, 7).map((day, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">
-                    {new Date(day.collection_date).toLocaleDateString()}
-                  </span>
-                  <div className="flex items-center gap-4">
-                    <span className="text-sm font-medium">{day.collections_count} collections</span>
-                    <span className="text-sm text-gray-500">{formatWeight(day.daily_weight)}</span>
+              {(performance.daily_trends || []).length > 0 ? (
+                (performance.daily_trends || []).slice(0, 7).map((day, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">
+                      {new Date(day.collection_date).toLocaleDateString()}
+                    </span>
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm font-medium">{day.collections_count} collections</span>
+                      <span className="text-sm text-gray-500">{formatWeight(day.daily_weight)}</span>
+                    </div>
                   </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-400">
+                  <TrendingUp className="mx-auto mb-2 h-8 w-8" />
+                  <p className="text-sm">No collection data yet.</p>
+                  <p className="text-xs mt-1">Complete collections to see your daily performance trend.</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -225,26 +233,34 @@ const AnalyticsDashboard = () => {
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Waste Type Specialization</h3>
             <div className="space-y-3">
-              {(performance.waste_breakdown || []).slice(0, 5).map((waste, index) => {
-                const percentage = (performance.waste_breakdown || []).length > 0 
-                  ? (waste.total_weight / (performance.waste_breakdown || []).reduce((sum, w) => sum + parseFloat(w.total_weight), 0)) * 100 
-                  : 0;
-                
-                return (
-                  <div key={index} className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span className="capitalize font-medium">{waste.waste_type}</span>
-                      <span>{formatWeight(waste.total_weight)} ({percentage.toFixed(1)}%)</span>
+              {(performance.waste_breakdown || []).length > 0 ? (
+                (performance.waste_breakdown || []).slice(0, 5).map((waste, index) => {
+                  const percentage = (performance.waste_breakdown || []).length > 0 
+                    ? (waste.total_weight / (performance.waste_breakdown || []).reduce((sum, w) => sum + parseFloat(w.total_weight), 0)) * 100 
+                    : 0;
+                  
+                  return (
+                    <div key={index} className="space-y-1">
+                      <div className="flex justify-between text-sm">
+                        <span className="capitalize font-medium">{waste.waste_type}</span>
+                        <span>{formatWeight(waste.total_weight)} ({percentage.toFixed(1)}%)</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-emerald-600 h-2 rounded-full" 
+                          style={{ width: `${percentage}%` }}
+                        ></div>
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-emerald-600 h-2 rounded-full" 
-                        style={{ width: `${percentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              ) : (
+                <div className="text-center py-8 text-gray-400">
+                  <Recycle className="mx-auto mb-2 h-8 w-8" />
+                  <p className="text-sm">No waste type data yet.</p>
+                  <p className="text-xs mt-1">Complete collections to see your waste specialization.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

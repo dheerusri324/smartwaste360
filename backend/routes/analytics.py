@@ -21,49 +21,67 @@ def get_collector_performance():
         from config.database import get_db
         from psycopg2.extras import RealDictCursor
         
+        daily_trends = []
+        waste_breakdown = []
+        totals = {'total_collections': 0, 'total_weight': 0}
+        
         with get_db() as db:
             with db.cursor(cursor_factory=RealDictCursor) as cursor:
-                # Get daily trends - use proper interval syntax
-                cursor.execute("""
-                    SELECT 
-                        DATE(completed_at) as collection_date,
-                        COUNT(*) as collections_count,
-                        COALESCE(SUM(total_weight_collected), 0) as daily_weight
-                    FROM collection_bookings
-                    WHERE collector_id = %s 
-                      AND status = 'completed'
-                      AND completed_at >= NOW() - make_interval(days => %s)
-                    GROUP BY DATE(completed_at)
-                    ORDER BY collection_date DESC
-                """, (collector_id, days))
-                daily_trends = cursor.fetchall()
+                # Get daily trends
+                try:
+                    cursor.execute("""
+                        SELECT 
+                            DATE(completed_at) as collection_date,
+                            COUNT(*) as collections_count,
+                            COALESCE(SUM(total_weight_collected), 0) as daily_weight
+                        FROM collection_bookings
+                        WHERE collector_id = %s 
+                          AND status = 'completed'
+                          AND completed_at >= NOW() - make_interval(days => %s)
+                        GROUP BY DATE(completed_at)
+                        ORDER BY collection_date DESC
+                    """, (collector_id, days))
+                    daily_trends = cursor.fetchall()
+                except Exception as e:
+                    print(f"[ANALYTICS] Daily trends query failed: {e}")
+                    daily_trends = []
                 
-                # Get waste breakdown
-                cursor.execute("""
-                    SELECT 
-                        COALESCE(waste_types_collected, 'Mixed') as waste_type,
-                        COALESCE(SUM(total_weight_collected), 0) as total_weight,
-                        COUNT(*) as collection_count
-                    FROM collection_bookings
-                    WHERE collector_id = %s 
-                      AND status = 'completed'
-                      AND completed_at >= NOW() - make_interval(days => %s)
-                    GROUP BY waste_types_collected
-                    ORDER BY total_weight DESC
-                """, (collector_id, days))
-                waste_breakdown = cursor.fetchall()
+                # Get waste breakdown from user_transactions.materials JSONB
+                try:
+                    cursor.execute("""
+                        SELECT 
+                            key as waste_type,
+                            COALESCE(SUM((value)::numeric), 0) as total_weight,
+                            COUNT(*) as collection_count
+                        FROM user_transactions ut
+                        JOIN collection_bookings cb ON ut.booking_id = cb.booking_id
+                        CROSS JOIN LATERAL jsonb_each_text(ut.materials) AS kv(key, value)
+                        WHERE cb.collector_id = %s 
+                          AND cb.status = 'completed'
+                          AND cb.completed_at >= NOW() - make_interval(days => %s)
+                          AND ut.materials IS NOT NULL
+                        GROUP BY key
+                        ORDER BY total_weight DESC
+                    """, (collector_id, days))
+                    waste_breakdown = cursor.fetchall()
+                except Exception as e:
+                    print(f"[ANALYTICS] Waste breakdown (transactions) query failed: {e}")
+                    waste_breakdown = []
                 
                 # Get totals
-                cursor.execute("""
-                    SELECT 
-                        COUNT(*) as total_collections,
-                        COALESCE(SUM(total_weight_collected), 0) as total_weight
-                    FROM collection_bookings
-                    WHERE collector_id = %s 
-                      AND status = 'completed'
-                      AND completed_at >= NOW() - make_interval(days => %s)
-                """, (collector_id, days))
-                totals = cursor.fetchone()
+                try:
+                    cursor.execute("""
+                        SELECT 
+                            COUNT(*) as total_collections,
+                            COALESCE(SUM(total_weight_collected), 0) as total_weight
+                        FROM collection_bookings
+                        WHERE collector_id = %s 
+                          AND status = 'completed'
+                          AND completed_at >= NOW() - make_interval(days => %s)
+                    """, (collector_id, days))
+                    totals = cursor.fetchone() or totals
+                except Exception as e:
+                    print(f"[ANALYTICS] Totals query failed: {e}")
         
         return jsonify({
             'success': True,
