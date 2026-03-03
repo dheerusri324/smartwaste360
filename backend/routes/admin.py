@@ -418,15 +418,71 @@ def get_system_health():
         if claims.get('role') != 'admin':
             return jsonify({"msg": "Access denied: Admin access required"}), 403
 
-        # System health metrics
+        from config.database import get_db
+        from psycopg2.extras import RealDictCursor
+        from datetime import datetime
+
+        # Actually test database connectivity
+        db_status = 'unhealthy'
+        db_details = {}
+        try:
+            with get_db() as db:
+                with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                    cursor.execute("SELECT COUNT(*) as count FROM users")
+                    user_count = cursor.fetchone()['count']
+                    cursor.execute("SELECT COUNT(*) as count FROM collectors")
+                    collector_count = cursor.fetchone()['count']
+                    cursor.execute("SELECT COUNT(*) as count FROM colonies")
+                    colony_count = cursor.fetchone()['count']
+                    cursor.execute("SELECT COUNT(*) as count FROM collection_bookings")
+                    booking_count = cursor.fetchone()['count']
+                    db_status = 'healthy'
+                    db_details = {
+                        'total_users': user_count,
+                        'total_collectors': collector_count,
+                        'total_colonies': colony_count,
+                        'total_bookings': booking_count
+                    }
+        except Exception as db_err:
+            db_status = 'unhealthy'
+            db_details = {'error': str(db_err)}
+
         health_data = {
-            'database_status': 'healthy',
+            'database_status': db_status,
+            'database_details': db_details,
             'api_status': 'healthy',
             'ml_service_status': 'healthy',
-            'last_updated': '2025-10-09T20:00:00Z'
+            'last_updated': datetime.now().isoformat()
         }
 
         return jsonify(health_data), 200
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': 'An internal server error occurred'}), 500
+
+@bp.route('/settings/points-config', methods=['GET'])
+@jwt_required()
+def get_points_config():
+    """Get points configuration for all material types"""
+    try:
+        claims = get_jwt()
+        if claims.get('role') != 'admin':
+            return jsonify({"msg": "Access denied: Admin access required"}), 403
+
+        from config.database import get_db
+        from psycopg2.extras import RealDictCursor
+
+        with get_db() as db:
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute("""
+                    SELECT material_type, points_per_kg, is_recyclable, co2_factor
+                    FROM points_config
+                    ORDER BY points_per_kg DESC
+                """)
+                config = cursor.fetchall()
+
+        return jsonify({'points_config': config}), 200
 
     except Exception as e:
         traceback.print_exc()

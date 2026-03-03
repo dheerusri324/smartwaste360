@@ -106,3 +106,11 @@ export const getSystemHealth = async () => {
   const response = await api.get('/admin/system/health');
   return response.data;
 };
+
+/**
+ * Get points configuration
+ */
+export const getPointsConfig = async () => {
+  const response = await api.get('/admin/settings/points-config');
+  return response.data;
+};
