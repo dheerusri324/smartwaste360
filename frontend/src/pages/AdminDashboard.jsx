@@ -477,23 +477,21 @@ const AdminDashboard = () => {
 
 /* ─── Users Tab Component ─── */
 const UsersTab = ({ users, setUsers, usersLoading, setUsersLoading, userSearchTerm, setUserSearchTerm, userStatusFilter, setUserStatusFilter }) => {
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    loadUsers();
-  }, []);
-
-  const loadUsers = async () => {
-    setUsersLoading(true);
-    try {
-      const response = await getAllUsers();
-      setUsers(response.users || []);
-    } catch (err) {
-      console.error('Failed to load users:', err);
-      setUsers([]);
-    } finally {
-      setUsersLoading(false);
-    }
-  };
+    const fetchUsers = async () => {
+      setUsersLoading(true);
+      try {
+        const response = await getAllUsers();
+        setUsers(response.users || []);
+      } catch (err) {
+        console.error('Failed to load users:', err);
+        setUsers([]);
+      } finally {
+        setUsersLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleToggleUserStatus = async (userId, currentStatus) => {
     try {
@@ -685,11 +683,6 @@ const UsersTab = ({ users, setUsers, usersLoading, setUsersLoading, userSearchTe
 
 /* ─── Settings Tab Component ─── */
 const SettingsTab = ({ healthData, setHealthData, pointsConfig, setPointsConfig, settingsLoading, setSettingsLoading }) => {
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => {
-    loadSettingsData();
-  }, []);
-
   const loadSettingsData = async () => {
     setSettingsLoading(true);
     try {
@@ -705,6 +698,10 @@ const SettingsTab = ({ healthData, setHealthData, pointsConfig, setPointsConfig,
       setSettingsLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadSettingsData();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const StatusBadge = ({ status }) => {
     const isHealthy = status === 'healthy';
