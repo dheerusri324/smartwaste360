@@ -477,6 +477,7 @@ const AdminDashboard = () => {
 
 /* ─── Users Tab Component ─── */
 const UsersTab = ({ users, setUsers, usersLoading, setUsersLoading, userSearchTerm, setUserSearchTerm, userStatusFilter, setUserStatusFilter }) => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadUsers();
   }, []);
@@ -684,6 +685,7 @@ const UsersTab = ({ users, setUsers, usersLoading, setUsersLoading, userSearchTe
 
 /* ─── Settings Tab Component ─── */
 const SettingsTab = ({ healthData, setHealthData, pointsConfig, setPointsConfig, settingsLoading, setSettingsLoading }) => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadSettingsData();
   }, []);
