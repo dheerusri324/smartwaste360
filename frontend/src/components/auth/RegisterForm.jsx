@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api';
-import { MapPin, User, Truck, Shield } from 'lucide-react';
+import { MapPin, User, Truck } from 'lucide-react';
 import { Modal } from '../common';
 import LocationPicker from '../maps/LocationPicker';
 import { useLocation } from '../../hooks';
@@ -50,8 +50,6 @@ const RegisterForm = () => {
         navigate('/login');
       } else if (role === 'collector') {
         navigate('/collector/login');
-      } else if (role === 'admin') {
-        navigate('/admin/login');
       }
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed.');
@@ -71,9 +69,7 @@ const RegisterForm = () => {
           <button type="button" onClick={() => setRole('collector')} className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 ${role === 'collector' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300'}`}>
             <Truck size={18} /> Collector
           </button>
-          <button type="button" onClick={() => setRole('admin')} className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 ${role === 'admin' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300'}`}>
-            <Shield size={18} /> Admin
-          </button>
+
         </div>
 
         {error && <p className="p-3 my-2 text-sm text-red-800 bg-red-100 rounded-lg">{error}</p>}
@@ -98,8 +94,6 @@ const RegisterForm = () => {
           </>
         ) : role === 'collector' ? (
           <input type="text" name="vehicle_number" placeholder="Vehicle Number (Optional)" onChange={handleChange} className="form-input" />
-        ) : role === 'admin' ? (
-          <input type="text" name="username" placeholder="Admin Username" onChange={handleChange} required className="form-input" />
         ) : null}
         
         <button type="submit" disabled={loading} className="btn-primary w-full">
