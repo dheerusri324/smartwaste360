@@ -55,6 +55,7 @@ const IoTMonitor = () => {
     fetchLiveData();
     intervalRef.current = setInterval(fetchLiveData, POLL_INTERVAL);
     return () => clearInterval(intervalRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fillPct = data?.fill_percentage ?? 0;
