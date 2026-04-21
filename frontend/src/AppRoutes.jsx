@@ -27,6 +27,7 @@ import AnalyticsDashboard from './pages/AnalyticsDashboard';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import LoginSelector from './components/common/LoginSelector';
+import IoTMonitor from './pages/IoTMonitor';
 
 const AppRoutes = () => (
   <Routes>
@@ -54,6 +55,7 @@ const AppRoutes = () => (
       <Route path="/" element={<Home />} />
       <Route path="/maps" element={<Maps />} />
       <Route path="/leaderboard" element={<Leaderboard />} />
+      <Route path="/iot-monitor" element={<IoTMonitor />} />
       
       {/* Protected routes that use the MainLayout */}
       <Route path="/camera" element={<ProtectedRoute><Camera /></ProtectedRoute>} />

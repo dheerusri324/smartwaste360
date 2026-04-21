@@ -30,7 +30,7 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 # Use Flask-CORS with explicit configuration
 CORS(app, 
      origins=['*'],  # Allow all origins - Vercel keeps changing URLs
-     allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
+     allow_headers=['Content-Type', 'Authorization', 'X-Requested-With', 'X-IoT-API-Key'],
      methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
      supports_credentials=False)
 
@@ -38,7 +38,7 @@ CORS(app,
 @app.after_request
 def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With,X-IoT-API-Key')
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
     return response
 
@@ -53,7 +53,7 @@ def create_directories():
 create_directories()
 
 # --- IMPORT & REGISTER BLUEPRINTS (ROUTES) ---
-from routes import auth, waste, booking, leaderboard, camera, collector, transaction, health, colony, collection_points, admin, analytics, migration
+from routes import auth, waste, booking, leaderboard, camera, collector, transaction, health, colony, collection_points, admin, analytics, migration, iot
 
 app.register_blueprint(auth.bp, url_prefix='/api/auth')
 app.register_blueprint(waste.bp, url_prefix='/api/waste')
@@ -68,6 +68,7 @@ app.register_blueprint(admin.bp, url_prefix='/api/admin')
 app.register_blueprint(analytics.bp, url_prefix='/api/analytics')
 app.register_blueprint(health.bp, url_prefix='/health')
 app.register_blueprint(migration.bp, url_prefix='/api/migration')
+app.register_blueprint(iot.bp, url_prefix='/api/iot')
 
 # Advanced features temporarily disabled for debugging
 # app.register_blueprint(advanced_features.bp, url_prefix='/api/advanced')
