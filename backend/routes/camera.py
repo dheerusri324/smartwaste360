@@ -11,7 +11,7 @@ from services.points_service import PointsService # <-- CORRECTED IMPORT
 from models.waste import WasteLog # <-- CORRECTED IMPORT
 from models.user import User # <-- CORRECTED IMPORT
 from models.colony import Colony # <-- CORRECTED IMPORT
-
+from models.achievement import Achievement
 bp = Blueprint('camera', __name__)
 
 # Initialize services once
@@ -78,6 +78,18 @@ def capture_image():
         )
         
         User.update_user_points(user_id, points_earned, weight)
+        
+        # Update achievements and statistics
+        try:
+            Achievement.update_user_statistics(user_id, result['predicted_category'], weight)
+            new_achievements = Achievement.check_and_award_achievements(user_id)
+            if new_achievements:
+                from services.notification_service import NotificationService
+                for ach in new_achievements:
+                    NotificationService.send_achievement_notification(user_id, ach)
+        except Exception as ach_err:
+            print(f"[ERROR] Failed to update achievements: {ach_err}")
+            traceback.print_exc()
         
         # Update colony waste amounts based on predicted category
         from utils.log_capture import log_capture

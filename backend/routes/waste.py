@@ -12,6 +12,7 @@ from services.points_service import PointsService
 from models.waste import WasteLog
 from models.user import User
 from models.colony import Colony
+from models.achievement import Achievement
 from utils.log_capture import log_capture
 
 bp = Blueprint('waste', __name__)
@@ -97,6 +98,18 @@ def classify_waste_route():
         )
         
         User.update_user_points(user_id, points_earned, weight)
+        
+        # Update achievements and statistics
+        try:
+            Achievement.update_user_statistics(user_id, result['predicted_category'], weight)
+            new_achievements = Achievement.check_and_award_achievements(user_id)
+            if new_achievements:
+                from services.notification_service import NotificationService
+                for ach in new_achievements:
+                    NotificationService.send_achievement_notification(user_id, ach)
+        except Exception as ach_err:
+            print(f"[ERROR] Failed to update achievements: {ach_err}")
+            traceback.print_exc()
         
         # Update colony waste amounts based on predicted category
         log_capture.add('DEBUG', f"Getting user {user_id} to update colony waste", user_id=user_id)

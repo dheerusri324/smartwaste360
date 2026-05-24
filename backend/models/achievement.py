@@ -11,6 +11,7 @@ class Achievement:
             'description': 'Classify your first waste item',
             'points': 50,
             'icon': 'camera',
+            'category': 'recycling',
             'criteria': {'waste_classifications': 1}
         },
         'eco_warrior': {
@@ -18,6 +19,7 @@ class Achievement:
             'description': 'Classify 100 waste items',
             'points': 500,
             'icon': 'shield',
+            'category': 'recycling',
             'criteria': {'waste_classifications': 100}
         },
         'recycling_champion': {
@@ -25,6 +27,7 @@ class Achievement:
             'description': 'Help your colony reach collection threshold',
             'points': 200,
             'icon': 'award',
+            'category': 'community',
             'criteria': {'colony_collections_triggered': 1}
         },
         'green_streak': {
@@ -32,6 +35,7 @@ class Achievement:
             'description': 'Classify waste for 7 consecutive days',
             'points': 300,
             'icon': 'calendar',
+            'category': 'streak',
             'criteria': {'consecutive_days': 7}
         },
         'plastic_hunter': {
@@ -39,6 +43,7 @@ class Achievement:
             'description': 'Classify 50 plastic items',
             'points': 250,
             'icon': 'target',
+            'category': 'recycling',
             'criteria': {'plastic_classifications': 50}
         },
         'weight_master': {
@@ -46,6 +51,7 @@ class Achievement:
             'description': 'Process 100kg of waste',
             'points': 400,
             'icon': 'scale',
+            'category': 'collection',
             'criteria': {'total_weight_kg': 100}
         },
         'community_leader': {
@@ -53,6 +59,7 @@ class Achievement:
             'description': 'Be in top 3 of your colony leaderboard',
             'points': 350,
             'icon': 'crown',
+            'category': 'community',
             'criteria': {'colony_rank': 3}
         }
     }

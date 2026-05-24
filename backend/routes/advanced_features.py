@@ -24,11 +24,40 @@ def get_user_achievements(user_id):
         if claims.get('role') != 'admin' and current_user_id != user_id:
             return jsonify({"msg": "Access denied"}), 403
         
-        achievements = Achievement.get_user_achievements(user_id)
+        earned_achievements = Achievement.get_user_achievements(user_id)
         progress = Achievement.get_user_progress(user_id)
         
+        # Build unified array for the frontend
+        unified_achievements = []
+        earned_names = {a['name'] for a in earned_achievements} if earned_achievements else set()
+        
+        for ach_id, ach_data in Achievement.ACHIEVEMENTS.items():
+            is_earned = ach_data['name'] in earned_names
+            target_val = list(ach_data['criteria'].values())[0]
+            
+            if is_earned:
+                current_val = target_val
+            else:
+                prog_data = progress.get(ach_id, {})
+                prog_percent = prog_data.get('progress', 0)
+                # Calculate current from percentage
+                current_val = (prog_percent / 100.0) * target_val
+                current_val = int(current_val) if isinstance(target_val, int) else round(current_val, 2)
+                
+            unified_achievements.append({
+                'id': ach_id,
+                'name': ach_data['name'],
+                'description': ach_data['description'],
+                'category': ach_data.get('category', 'recycling'),
+                'earned': is_earned,
+                'progress': {
+                    'current': current_val,
+                    'target': target_val
+                }
+            })
+        
         return jsonify({
-            'achievements': achievements,
+            'achievements': unified_achievements,
             'progress': progress
         }), 200
         
