@@ -13,8 +13,8 @@ export const getCollectorPerformance = async (days = 30) => {
 /**
  * Gets quick summary stats for collector dashboard
  */
-export const getCollectorSummary = async () => {
-  const response = await api.get('/analytics/collector/summary');
+export const getCollectorSummary = async (days = 30) => {
+  const response = await api.get(`/analytics/collector/summary?days=${days}`);
   return response.data;
 };
 

@@ -409,6 +409,60 @@ def create_collection_point():
         traceback.print_exc()
         return jsonify({'error': 'An internal server error occurred'}), 500
 
+@bp.route('/collection-points/<int:point_id>', methods=['PUT'])
+@jwt_required()
+def update_collection_point(point_id):
+    """Update a collection point"""
+    try:
+        claims = get_jwt()
+        if claims.get('role') != 'admin':
+            return jsonify({"msg": "Access denied: Admin access required"}), 403
+
+        data = request.get_json()
+        required_fields = ['point_name', 'waste_types_accepted', 'latitude', 'longitude']
+        
+        if not all(field in data for field in required_fields):
+            return jsonify({'error': 'Missing required fields: point_name, waste_types_accepted, latitude, longitude'}), 400
+
+        success = CollectionPoint.update(
+            point_id=point_id,
+            point_name=data['point_name'],
+            location_description=data.get('location_description', ''),
+            latitude=data.get('latitude'),
+            longitude=data.get('longitude'),
+            waste_types_accepted=data['waste_types_accepted'],
+            max_capacity_kg=data.get('max_capacity_kg', 100.00)
+        )
+
+        if success:
+            return jsonify({'message': 'Collection point updated successfully'}), 200
+        else:
+            return jsonify({'error': 'Collection point not found'}), 404
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': 'An internal server error occurred'}), 500
+
+@bp.route('/collection-points/<int:point_id>', methods=['DELETE'])
+@jwt_required()
+def delete_collection_point(point_id):
+    """Delete a collection point"""
+    try:
+        claims = get_jwt()
+        if claims.get('role') != 'admin':
+            return jsonify({"msg": "Access denied: Admin access required"}), 403
+
+        success = CollectionPoint.delete(point_id)
+
+        if success:
+            return jsonify({'message': 'Collection point deleted successfully'}), 200
+        else:
+            return jsonify({'error': 'Collection point not found'}), 404
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': 'An internal server error occurred'}), 500
+
 @bp.route('/system/health', methods=['GET'])
 @jwt_required()
 def get_system_health():

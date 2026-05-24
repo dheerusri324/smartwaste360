@@ -133,6 +133,7 @@ def get_collector_summary():
             return jsonify({"msg": "Access denied: Collector token required"}), 403
         
         collector_id = get_jwt_identity()
+        days = request.args.get('days', 7, type=int)
         
         # Get actual collector stats from database
         from models.collector import Collector
@@ -169,8 +170,8 @@ def get_collector_summary():
                     FROM collection_bookings
                     WHERE collector_id = %s 
                       AND status = 'completed'
-                      AND completed_at >= NOW() - INTERVAL '7 days'
-                """, (collector_id,))
+                      AND completed_at >= NOW() - make_interval(days => %s)
+                """, (collector_id, days))
                 this_week = cursor.fetchone()
                 
                 # Get this month's stats
@@ -196,8 +197,8 @@ def get_collector_summary():
                     FROM collection_bookings
                     WHERE collector_id = %s 
                       AND status = 'completed'
-                      AND completed_at >= NOW() - INTERVAL '7 days'
-                """, (collector_id,))
+                      AND completed_at >= NOW() - make_interval(days => %s)
+                """, (collector_id, days))
                 active_days_result = cursor.fetchone()
                 active_days = active_days_result['active_days'] or 0
         

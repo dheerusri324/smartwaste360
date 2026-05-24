@@ -34,7 +34,7 @@ const AnalyticsDashboard = () => {
       
       // Load all dashboard data in parallel
       const [summaryData, performanceData, realtimeData] = await Promise.all([
-        getCollectorSummary(),
+        getCollectorSummary(selectedPeriod),
         getCollectorPerformance(selectedPeriod),
         getRealtimeDashboard()
       ]);
@@ -128,7 +128,7 @@ const AnalyticsDashboard = () => {
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600">Collections (7d)</p>
+                <p className="text-sm font-medium text-gray-600">Collections ({selectedPeriod}d)</p>
                 <p className="text-2xl font-bold text-gray-900">{summary.current_period.collections}</p>
                 {formatGrowth(summary.growth_metrics.collection_growth_percent)}
               </div>
@@ -163,7 +163,7 @@ const AnalyticsDashboard = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Active Days</p>
                 <p className="text-2xl font-bold text-gray-900">{summary.current_period?.active_days || 0}</p>
-                <p className="text-xs text-gray-500">Last 7 days</p>
+                <p className="text-xs text-gray-500">Last {selectedPeriod} days</p>
               </div>
               <Calendar className="h-8 w-8 text-emerald-600" />
             </div>

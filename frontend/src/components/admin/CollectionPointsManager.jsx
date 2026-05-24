@@ -21,8 +21,7 @@ const CollectionPointsManager = () => {
   const [error, setError] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
-  // eslint-disable-next-line no-unused-vars
-  const [_editingPoint, setEditingPoint] = useState(null);
+  const [editingPoint, setEditingPoint] = useState(null);
   const [mapCenter] = useState([17.385044, 78.486671]); // Hyderabad coordinates
 
   const [formData, setFormData] = useState({
@@ -99,20 +98,56 @@ const CollectionPointsManager = () => {
     }
 
     try {
-      await api.post('/admin/collection-points', {
-        ...formData,
-        latitude: parseFloat(formData.latitude),
-        longitude: parseFloat(formData.longitude),
-        max_capacity_kg: parseFloat(formData.max_capacity_kg)
-      });
+      if (editingPoint) {
+        await api.put(`/admin/collection-points/${editingPoint.point_id}`, {
+          ...formData,
+          latitude: parseFloat(formData.latitude),
+          longitude: parseFloat(formData.longitude),
+          max_capacity_kg: parseFloat(formData.max_capacity_kg)
+        });
+      } else {
+        await api.post('/admin/collection-points', {
+          ...formData,
+          latitude: parseFloat(formData.latitude),
+          longitude: parseFloat(formData.longitude),
+          max_capacity_kg: parseFloat(formData.max_capacity_kg)
+        });
+      }
 
       await loadCollectionPoints();
       resetForm();
       setError('');
     } catch (err) {
-      console.error('Error creating collection point:', err);
-      setError(err.response?.data?.error || 'Failed to create collection point');
+      console.error('Error saving collection point:', err);
+      setError(err.response?.data?.error || 'Failed to save collection point');
     }
+  };
+
+  const handleDelete = async (pointId) => {
+    if (window.confirm('Are you sure you want to delete this collection point?')) {
+      try {
+        await api.delete(`/admin/collection-points/${pointId}`);
+        await loadCollectionPoints();
+      } catch (err) {
+        console.error('Error deleting collection point:', err);
+        setError(err.response?.data?.error || 'Failed to delete collection point');
+      }
+    }
+  };
+
+  const handleEdit = (point) => {
+    setEditingPoint(point);
+    setFormData({
+      point_name: point.point_name,
+      location_description: point.location_description || '',
+      latitude: point.latitude,
+      longitude: point.longitude,
+      waste_types_accepted: point.waste_types_accepted || [],
+      max_capacity_kg: point.max_capacity_kg || 100
+    });
+    setSelectedLocation({ lat: parseFloat(point.latitude), lng: parseFloat(point.longitude) });
+    setShowCreateForm(true);
+    window.scrollTo(0, 0);
   };
 
   const resetForm = () => {
@@ -216,7 +251,9 @@ const CollectionPointsManager = () => {
       {/* Create Form */}
       {showCreateForm && (
         <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Create New Collection Point</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            {editingPoint ? 'Edit Collection Point' : 'Create New Collection Point'}
+          </h3>
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -320,7 +357,7 @@ const CollectionPointsManager = () => {
                 className="flex items-center gap-2 px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
               >
                 <Save size={16} />
-                Create Collection Point
+                {editingPoint ? 'Update Collection Point' : 'Create Collection Point'}
               </button>
               
               <button
@@ -406,13 +443,13 @@ const CollectionPointsManager = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex gap-2">
                       <button
-                        onClick={() => setEditingPoint(point)}
+                        onClick={() => handleEdit(point)}
                         className="text-emerald-600 hover:text-emerald-900"
                       >
                         <Edit size={16} />
                       </button>
                       <button
-                        onClick={() => {/* Add delete functionality */}}
+                        onClick={() => handleDelete(point.point_id)}
                         className="text-red-600 hover:text-red-900"
                       >
                         <Trash2 size={16} />

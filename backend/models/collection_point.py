@@ -81,6 +81,39 @@ class CollectionPoint:
                 return point_id
 
     @staticmethod
+    def update(point_id, point_name, location_description, latitude, longitude, 
+               waste_types_accepted, max_capacity_kg):
+        """Update an existing collection point."""
+        sql = """
+            UPDATE collection_points 
+            SET point_name = %s, location_description = %s, latitude = %s, longitude = %s, 
+                waste_types_accepted = %s, max_capacity_kg = %s
+            WHERE point_id = %s
+        """
+        with get_db() as db:
+            if not db: 
+                raise ConnectionError("Database connection not available.")
+            with db.cursor() as cursor:
+                cursor.execute(sql, (
+                    point_name, location_description, latitude, longitude,
+                    waste_types_accepted, max_capacity_kg, point_id
+                ))
+                db.commit()
+                return cursor.rowcount > 0
+
+    @staticmethod
+    def delete(point_id):
+        """Delete a collection point."""
+        sql = "DELETE FROM collection_points WHERE point_id = %s"
+        with get_db() as db:
+            if not db: 
+                raise ConnectionError("Database connection not available.")
+            with db.cursor() as cursor:
+                cursor.execute(sql, (point_id,))
+                db.commit()
+                return cursor.rowcount > 0
+
+    @staticmethod
     def update_capacity(point_id, weight_collected):
         """Update collection point capacity after collection."""
         sql = """
