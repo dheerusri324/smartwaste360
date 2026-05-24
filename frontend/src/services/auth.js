@@ -2,6 +2,15 @@
 
 import api from './api';
 
+const safeStorage = {
+  setItem: (key, value) => {
+    try { localStorage.setItem(key, value); } catch (e) { console.warn('localStorage error', e); }
+  },
+  removeItem: (key) => {
+    try { localStorage.removeItem(key); } catch (e) { console.warn('localStorage error', e); }
+  }
+};
+
 /**
  * Sends a registration request to the backend.
  * @param {object} userData The new user's information.
@@ -18,7 +27,7 @@ export const registerUser = async (userData) => {
 export const loginUser = async (credentials) => {
   const response = await api.post('/auth/login', credentials);
   if (response.data.access_token) {
-    localStorage.setItem('token', response.data.access_token);
+    safeStorage.setItem('token', response.data.access_token);
   }
   return response.data;
 };
@@ -27,7 +36,7 @@ export const loginUser = async (credentials) => {
  * Logs the user out by removing the token from local storage.
  */
 export const logoutUser = () => {
-  localStorage.removeItem('token');
+  safeStorage.removeItem('token');
 };
 
 /**

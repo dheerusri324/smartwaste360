@@ -28,6 +28,7 @@ const CollectorStatsWidget = () => {
     }
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadSummary();
@@ -37,8 +38,10 @@ const CollectorStatsWidget = () => {
     try {
       const response = await getCollectorSummary();
       setSummary(response.data);
-    } catch (error) {
-      console.error('Failed to load collector summary:', error);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to load collector summary:', err);
+      setError("Failed to load collector statistics.");
     } finally {
       setLoading(false);
     }
@@ -71,6 +74,14 @@ const CollectorStatsWidget = () => {
             <div className="h-16 bg-gray-200 rounded"></div>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-red-200">
+        <p className="text-red-500 text-center">{error}</p>
       </div>
     );
   }

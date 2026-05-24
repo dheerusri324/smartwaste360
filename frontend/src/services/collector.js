@@ -119,7 +119,7 @@ export const getAllCollectionPoints = async (filters = {}) => {
   let url = '/collection-points/';
   const params = new URLSearchParams();
   
-  console.log('[DEBUG] getAllCollectionPoints called with filters:', filters);
+
   
   if (filters.waste_types && filters.waste_types.length > 0) {
     filters.waste_types.forEach(type => params.append('waste_types', type));
@@ -134,19 +134,10 @@ export const getAllCollectionPoints = async (filters = {}) => {
     url += `?${params.toString()}`;
   }
   
-  console.log('[DEBUG] Final URL:', url);
-  
   try {
     const response = await api.get(url);
-    console.log('[DEBUG] API response:', response);
     return response.data;
   } catch (error) {
-    console.error('[DEBUG] API error:', error);
-    console.error('[DEBUG] Error details:', {
-      message: error.message,
-      response: error.response,
-      request: error.request
-    });
     throw error;
   }
 };
@@ -156,5 +147,13 @@ export const getAllCollectionPoints = async (filters = {}) => {
  */
 export const completeCollection = async (bookingId, collectionData) => {
   const response = await api.put(`/booking/${bookingId}/complete`, collectionData);
+  return response.data;
+};
+
+/**
+ * Gets the collector's recent activities.
+ */
+export const getRecentActivities = async (limit = 10) => {
+  const response = await api.get(`/collector/recent-activities?limit=${limit}`);
   return response.data;
 };

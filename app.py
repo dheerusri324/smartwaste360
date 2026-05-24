@@ -8,6 +8,12 @@ from flask_cors import CORS  # <-- 1. IMPORT CORS
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
 from dotenv import load_dotenv
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
+
+load_dotenv()
 
 load_dotenv()
 
@@ -20,6 +26,10 @@ app = Flask(__name__)
 # SECURITY: Real secrets must come from env vars. These defaults are for local dev only.
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-only-insecure-key-change-in-production')
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'dev-only-insecure-jwt-key-change-in-production')
+
+if app.config['SECRET_KEY'] == 'dev-only-insecure-key-change-in-production' or app.config['JWT_SECRET_KEY'] == 'dev-only-insecure-jwt-key-change-in-production':
+    logger.warning("CRITICAL SECURITY WARNING: Using default insecure SECRET_KEY or JWT_SECRET_KEY! Must be changed in production.")
+
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=24)
 app.config['UPLOAD_FOLDER'] = 'backend/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
@@ -53,7 +63,7 @@ def create_directories():
 create_directories()
 
 # --- IMPORT & REGISTER BLUEPRINTS (ROUTES) ---
-from routes import auth, waste, booking, leaderboard, camera, collector, transaction, health, colony, collection_points, admin, analytics, migration, iot
+from routes import auth, waste, booking, leaderboard, camera, collector, transaction, health, colony, collection_points, admin, analytics, migration, iot, advanced_features
 
 app.register_blueprint(auth.bp, url_prefix='/api/auth')
 app.register_blueprint(waste.bp, url_prefix='/api/waste')
@@ -70,8 +80,8 @@ app.register_blueprint(health.bp, url_prefix='/health')
 app.register_blueprint(migration.bp, url_prefix='/api/migration')
 app.register_blueprint(iot.bp, url_prefix='/api/iot')
 
-# Advanced features temporarily disabled for debugging
-# app.register_blueprint(advanced_features.bp, url_prefix='/api/advanced')
+# Advanced features enabled
+app.register_blueprint(advanced_features.bp, url_prefix='/api/advanced')
 
 # --- ROOT ROUTE ---
 @app.route('/')
@@ -99,9 +109,9 @@ if os.getenv('FLASK_DEBUG', '1') == '1':
     app.register_blueprint(debug_logs.bp, url_prefix='/api/debug')
     app.register_blueprint(debug_routes.bp)
     app.register_blueprint(setup.bp)
-    print("⚠️  DEBUG MODE: Debug and setup endpoints are ENABLED")
+    logger.info("⚠️  DEBUG MODE: Debug and setup endpoints are ENABLED")
 else:
-    print("🔒 PRODUCTION MODE: Debug and setup endpoints are DISABLED")
+    logger.info("🔒 PRODUCTION MODE: Debug and setup endpoints are DISABLED")
 
 # --- VALIDATE PRODUCTION CONFIG ---
 # NOTE: We use importlib because both backend/config.py and backend/config/
@@ -114,5 +124,5 @@ _config_mod.Config.validate_production()
 
 # --- RUN THE APP ---
 if __name__ == '__main__':
-    print("🚀 STARTING SMARTWASTE360 API v6.0.0")
+    logger.info("🚀 STARTING SMARTWASTE360 API v6.0.0")
     app.run(debug=os.getenv('FLASK_DEBUG', '1') == '1', host='0.0.0.0', port=5000)

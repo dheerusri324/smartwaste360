@@ -2,6 +2,7 @@
 
 from config.database import get_db
 from psycopg2.extras import RealDictCursor
+import logging
 
 class Colony:
     @staticmethod
@@ -28,7 +29,7 @@ class Colony:
                 existing_colony = cursor.fetchone()
                 
                 if existing_colony:
-                    print(f"[INFO] Found exact match: {existing_colony['colony_name']}")
+                    logging.info(f"Found exact match: {existing_colony['colony_name']}")
                     return existing_colony['colony_id']
                 
                 # Step 2: Try partial name matching for similar areas
@@ -46,7 +47,7 @@ class Colony:
                     
                     similar_colony = cursor.fetchone()
                     if similar_colony:
-                        print(f"[INFO] Found similar area: {similar_colony['colony_name']} (matches: {colony_name})")
+                        logging.info(f"Found similar area: {similar_colony['colony_name']} (matches: {colony_name})")
                         return similar_colony['colony_id']
                 
                 # Step 3: Location-based grouping with larger radius for major areas
@@ -69,14 +70,14 @@ class Colony:
                     
                     nearby_colony = cursor.fetchone()
                     if nearby_colony:
-                        print(f"[INFO] Grouping with nearby area: {nearby_colony['colony_name']} ({nearby_colony['distance']:.2f}km away)")
+                        logging.info(f"Grouping with nearby area: {nearby_colony['colony_name']} ({nearby_colony['distance']:.2f}km away)")
                         
                         # Update the colony's center point to be more central
                         Colony._update_colony_center(nearby_colony['colony_id'], latitude, longitude)
                         return nearby_colony['colony_id']
                 
                 # Step 4: Create new colony only if no suitable grouping found
-                print(f"[INFO] Creating new area colony: {colony_name}")
+                logging.info(f"Creating new area colony: {colony_name}")
                 
                 # Get better location details for new colony
                 city, state = Colony._get_city_state_from_coords(latitude, longitude)
@@ -139,7 +140,8 @@ class Colony:
             state = address.get('state') or 'Unknown'
             
             return city, state
-        except:
+        except Exception as e:
+            logging.error(f"Error fetching city/state from coords: {e}")
             return 'Unknown', 'Unknown'
     @staticmethod
     def update_waste_weight(colony_id, weight_change, is_recyclable):
@@ -423,7 +425,7 @@ class Colony:
         
         log_capture.add('DEBUG', f'add_waste_to_colony called', 
                        colony_id=colony_id, waste_category=waste_category, weight_kg=weight_kg)
-        print(f"[DEBUG] add_waste_to_colony called: colony_id={colony_id}, category={waste_category}, weight={weight_kg}")
+        logging.debug(f"add_waste_to_colony called: colony_id={colony_id}, category={waste_category}, weight={weight_kg}")
         
         with get_db() as db:
             if not db: 
@@ -445,7 +447,7 @@ class Colony:
                 if not column:
                     log_capture.add('WARNING', f'Unknown waste category: {waste_category}', 
                                   colony_id=colony_id, waste_category=waste_category)
-                    print(f"[WARNING] Unknown waste category: {waste_category}, skipping colony update")
+                    logging.warning(f"Unknown waste category: {waste_category}, skipping colony update")
                     return
                 
                 log_capture.add('DEBUG', f'Updating {column} for colony {colony_id}', 
@@ -485,4 +487,4 @@ class Colony:
                 db.commit()
                 log_capture.add('INFO', f'Successfully added {weight_kg}kg of {waste_category} to colony {colony_id} (+{points_earned} points)', 
                               colony_id=colony_id, waste_category=waste_category, weight_kg=weight_kg, points_earned=points_earned)
-                print(f"[INFO] Added {weight_kg}kg of {waste_category} to colony {colony_id} (+{points_earned} points)")
+                logging.info(f"Added {weight_kg}kg of {waste_category} to colony {colony_id} (+{points_earned} points)")

@@ -54,22 +54,14 @@ const AdminDashboard = () => {
     setLoading(true);
     setError('');
     try {
-      console.log('🔄 [ADMIN DASHBOARD v3.0] Loading admin dashboard data...');
-      
       // Load both collectors and overview data
       const [collectorsResponse, overviewResponse] = await Promise.all([
         getAllCollectors(),
         getAdminOverview()
       ]);
       
-      console.log('📊 Raw collectors response:', collectorsResponse);
-      console.log('📊 Raw overview response:', overviewResponse);
-      
       setCollectors(collectorsResponse.collectors || []);
       setOverviewData(overviewResponse);
-      
-      console.log('✅ Loaded collectors from backend:', collectorsResponse.collectors?.length || 0);
-      console.log('✅ Loaded overview data:', overviewResponse);
       
     } catch (err) {
       console.error('❌ Dashboard error:', err);
@@ -148,7 +140,6 @@ const AdminDashboard = () => {
         </div>
         <button
           onClick={() => {
-            console.log('🔄 Manual refresh triggered');
             loadCollectors();
           }}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -265,7 +256,6 @@ const AdminDashboard = () => {
               <p className="text-3xl font-bold text-gray-900">
                 {(() => {
                   const value = overviewData?.overview?.total_collections_completed || 0;
-                  console.log('📊 Collections completed value:', value, 'from:', overviewData?.overview);
                   return value;
                 })()}
               </p>

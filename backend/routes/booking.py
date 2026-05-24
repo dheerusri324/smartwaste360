@@ -5,7 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from models.booking import Booking
 from models.colony import Colony
 from models.route_optimizer import RouteOptimizer
-import traceback
+import logging
 from datetime import datetime, timedelta
 
 bp = Blueprint('booking', __name__)
@@ -38,7 +38,7 @@ def schedule_collection():
         }), 201
         
     except Exception as e:
-        traceback.print_exc()
+        logging.exception("Error scheduling collection")
         return jsonify({'error': str(e)}), 500
 
 @bp.route('/my-schedule', methods=['GET'])
@@ -50,9 +50,10 @@ def get_my_schedule():
             claims = get_jwt()
             if claims.get('role') != 'collector':
                 return jsonify({"msg": "Access denied: Collector token required"}), 403
-        except Exception:
-            # If get_jwt() fails, continue without role check for now
-            pass
+        except Exception as e:
+            logging.error(f"JWT Error: {e}")
+            return jsonify({"msg": "Access denied: Invalid token"}), 401
+        
         collector_id = get_jwt_identity()
         
         status = request.args.get('status')
@@ -70,7 +71,7 @@ def get_my_schedule():
         return jsonify({'bookings': formatted_bookings}), 200
 
     except Exception as e:
-        traceback.print_exc()
+        logging.exception("Error fetching collector schedule")
         return jsonify({'error': 'An internal server error occurred'}), 500
 
 @bp.route('/<int:booking_id>/complete', methods=['PUT'])
@@ -153,7 +154,7 @@ def complete_collection(booking_id):
         }), 200
         
     except Exception as e:
-        traceback.print_exc()
+        logging.exception("Error completing collection")
         return jsonify({'error': 'An internal server error occurred'}), 500
 
 @bp.route('/test', methods=['GET'])
@@ -227,7 +228,7 @@ def get_route_suggestions():
         }), 200
         
     except Exception as e:
-        traceback.print_exc()
+        logging.exception("Error getting route suggestions")
         return jsonify({'error': 'An internal server error occurred'}), 500
 
 @bp.route('/time-slots', methods=['GET'])
@@ -254,7 +255,7 @@ def get_available_time_slots():
         try:
             time_slots = RouteOptimizer.get_available_time_slots(date, collector_id)
         except Exception as db_error:
-            print(f"Database error in time slots: {db_error}")
+            logging.error(f"Database error in time slots: {db_error}")
             # Return default time slots as fallback
             time_slots = [
                 {'time': '09:00', 'available': True},
@@ -269,7 +270,7 @@ def get_available_time_slots():
         }), 200
         
     except Exception as e:
-        traceback.print_exc()
+        logging.exception("Error getting time slots")
         return jsonify({
             'date': request.args.get('date', ''),
             'time_slots': [
@@ -317,5 +318,5 @@ def schedule_route_batch():
         }), 201
         
     except Exception as e:
-        traceback.print_exc()
+        logging.exception("Error scheduling route batch")
         return jsonify({'error': 'An internal server error occurred'}), 500

@@ -23,14 +23,17 @@ const StatCard = ({ icon, label, value, unit, colorClass }) => (
 const UserStats = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const response = await getWasteStats();
         setStats(response.stats);
-      } catch (error) {
+        setError(null);
+      } catch (err) {
         console.error("Error fetching stats");
+        setError("Failed to load user statistics. Please try again later.");
       } finally {
         setLoading(false);
       }
@@ -45,6 +48,10 @@ const UserStats = () => {
         {[...Array(4)].map((_, i) => <div key={i} className="h-28 bg-gray-200 rounded-lg"></div>)}
       </div>
     );
+  }
+  
+  if (error) {
+    return <div className="text-center text-red-500 p-4 bg-red-50 rounded-lg">{error}</div>;
   }
   
   if (!stats) {

@@ -55,7 +55,7 @@ export const getUserCollectionPoints = async (filters = {}) => {
   let url = '/collection-points/';
   const params = new URLSearchParams();
   
-  console.log('[DEBUG] getUserCollectionPoints called with filters:', filters);
+
   
   if (filters.waste_types && filters.waste_types.length > 0) {
     filters.waste_types.forEach(type => params.append('waste_types', type));
@@ -70,7 +70,7 @@ export const getUserCollectionPoints = async (filters = {}) => {
     url += '?' + params.toString();
   }
   
-  console.log('[DEBUG] Final collection points URL:', url);
+
   const response = await api.get(url);
   return response.data;
 };

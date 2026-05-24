@@ -2,7 +2,7 @@
 
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
-import traceback
+import logging
 from models.collector import Collector
 from models.colony import Colony
 
@@ -42,7 +42,7 @@ def login_collector():
         }), 200
 
     except Exception as e:
-        traceback.print_exc()
+        logging.exception("Error in collector login")
         return jsonify({'error': 'An internal server error occurred'}), 500
 
 @bp.route('/profile', methods=['GET'])
@@ -56,9 +56,9 @@ def get_collector_profile():
             claims = get_jwt()
             if claims.get('role') != 'collector':
                 return jsonify({"msg": "Access denied: Collector token required"}), 403
-        except Exception:
-            # If get_jwt() fails, continue without role check for now
-            pass
+        except Exception as e:
+            logging.error(f"JWT Error: {e}")
+            return jsonify({"msg": "Access denied: Invalid token"}), 401
 
         collector = Collector.get_by_id(collector_id)
         
@@ -72,7 +72,7 @@ def get_collector_profile():
         return jsonify({'collector': collector_dict}), 200
         
     except Exception as e:
-        traceback.print_exc()
+        logging.exception("Error getting collector profile")
         return jsonify({'error': 'An internal server error occurred'}), 500
 
 @bp.route('/profile', methods=['PUT'])
@@ -107,7 +107,7 @@ def update_collector_profile():
         }), 200
         
     except Exception as e:
-        traceback.print_exc()
+        logging.exception("Error updating collector profile")
         return jsonify({'error': 'An internal server error occurred'}), 500
 
 @bp.route('/location', methods=['GET'])
@@ -129,7 +129,7 @@ def get_collector_location():
             return jsonify({'location': None}), 200
         
     except Exception as e:
-        traceback.print_exc()
+        logging.exception("Error getting collector location")
         return jsonify({'error': 'An internal server error occurred'}), 500
 
 @bp.route('/location', methods=['PUT'])
@@ -170,7 +170,7 @@ def update_collector_location():
         }), 200
         
     except Exception as e:
-        traceback.print_exc()
+        logging.exception("Error updating collector location")
         return jsonify({'error': 'An internal server error occurred'}), 500
 
 @bp.route('/ready-colonies', methods=['GET'])
@@ -182,9 +182,9 @@ def get_ready_colonies():
             claims = get_jwt()
             if claims.get('role') != 'collector':
                 return jsonify({"msg": "Access denied: Only collectors can view this resource"}), 403
-        except Exception:
-            # If get_jwt() fails, continue without role check for now
-            pass
+        except Exception as e:
+            logging.error(f"JWT Error: {e}")
+            return jsonify({"msg": "Access denied: Invalid token"}), 401
         
         collector_id = get_jwt_identity()
         collector = Collector.get_by_id(collector_id)
@@ -209,8 +209,7 @@ def get_ready_colonies():
                     print(f"[INFO] No ready colonies found within {radius}km of ({lat}, {lon}), showing all ready colonies")
                     colonies = Colony.get_colonies_ready_for_collection_by_type(waste_types, collector_id)
             except Exception as location_error:
-                print(f"[ERROR] Location-based query failed: {location_error}")
-                traceback.print_exc()
+                logging.exception(f"[ERROR] Location-based query failed: {location_error}")
                 # Fall back to all ready colonies
                 colonies = Colony.get_colonies_ready_for_collection_by_type(waste_types, collector_id)
         else:
@@ -219,7 +218,7 @@ def get_ready_colonies():
         
         return jsonify({'colonies': colonies}), 200
     except Exception as e:
-        traceback.print_exc()
+        logging.exception("Error getting ready colonies")
         return jsonify({'error': 'An internal server error occurred'}), 500
 
 @bp.route('/dashboard', methods=['GET'])
@@ -293,8 +292,7 @@ def get_collector_dashboard():
                 }), 200
                 
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        logging.exception("Error fetching dashboard data")
         return jsonify({'error': f'Failed to fetch dashboard data: {str(e)}'}), 500
 
 @bp.route('/recent-activities', methods=['GET'])
@@ -349,8 +347,7 @@ def get_recent_activities():
                 return jsonify({'activities': formatted_activities}), 200
                 
     except Exception as e:
-        import traceback
-        traceback.print_exc()
+        logging.exception("Error fetching activities")
         return jsonify({'error': f'Failed to fetch activities: {str(e)}'}), 500
 
 @bp.route('/complete-collection', methods=['POST'])
@@ -459,8 +456,9 @@ def complete_collection():
                 }), 200
                 
     except Exception as e:
-        import traceback
-        traceback.print_exc()
-        print(f"[ERROR] Collection completion failed: {str(e)}")
-        print(f"[ERROR] Data received: {data if 'data' in locals() else 'No data'}")
+        logging.exception(f"Collection completion failed: {str(e)}")
+        if 'data' in locals():
+            logging.error(f"Data received: {data}")
+        else:
+            logging.error("No data received")
         return jsonify({'error': f'Collection completion failed: {str(e)}'}), 500

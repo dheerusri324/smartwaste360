@@ -5,9 +5,22 @@ import { useAuth } from '../context/AuthContext';
 import UserStats from '../components/dashboard/UserStats';
 import WasteHistory from '../components/dashboard/WasteHistory';
 import QuickActions from '../components/dashboard/QuickActions'; // A new component for navigation
+import AchievementBadges from '../components/leaderboard/AchievementBadges';
+import { getUserAchievements } from '../services/advanced';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const [achievements, setAchievements] = React.useState([]);
+  const [loadingAchievements, setLoadingAchievements] = React.useState(true);
+
+  React.useEffect(() => {
+    if (user?.id) {
+      getUserAchievements(user.id)
+        .then(data => setAchievements(data.achievements || []))
+        .catch(err => console.error('Failed to load achievements:', err))
+        .finally(() => setLoadingAchievements(false));
+    }
+  }, [user?.id]);
 
   return (
     <div className="space-y-8">
@@ -20,6 +33,9 @@ const Dashboard = () => {
       
       {/* Dynamic Stats Cards */}
       <UserStats />
+
+      {/* Achievement Badges */}
+      <AchievementBadges achievements={achievements} loading={loadingAchievements} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Dynamic History Table */}

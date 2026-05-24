@@ -34,10 +34,10 @@ services:
       dockerfile: deployment/Dockerfile.backend
     environment:
       - FLASK_ENV=production
-      - DATABASE_URL=postgresql://smartwaste_user:${DB_PASSWORD:-secure_password_123}@db:5432/smartwaste360
+      - DATABASE_URL=postgresql://smartwaste_user:${DB_PASSWORD:?Database password not set}@db:5432/smartwaste360
       - REDIS_URL=redis://redis:6379/0
-      - SECRET_KEY=${SECRET_KEY:9Kav+QSIYrPNr5HzOyHumTLief4bL/tq/hZ9rXrv2qsnOEWChVOXDtn3itAaizUba6KpZ6fUpvgo6PRez8qiBw==}
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY:yWpOapJ/6SVTxf8SaHukTm2xWkbxSO6/sY+It/T7wJ3OCVUBJfHYHSjT27L3JAaAHo5+WmKCyMX1jsmqprhZaw==}
+      - SECRET_KEY=${SECRET_KEY:?Secret key not set}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:?JWT secret key not set}
       - GEMINI_API_KEY=${GEMINI_API_KEY}
     depends_on:
       - db
@@ -60,7 +60,7 @@ services:
     environment:
       - POSTGRES_DB=smartwaste360
       - POSTGRES_USER=smartwaste_user
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-secure_password_123}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:?Database password not set}
       - POSTGRES_INITDB_ARGS=--encoding=UTF-8 --lc-collate=C --lc-ctype=C
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -69,12 +69,12 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 512M
 
   # Redis Cache & Sessions
   redis:
     image: redis:7-alpine
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis_password}
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:?Redis password not set}
     volumes:
       - redis_data:/data
     restart: unless-stopped
@@ -98,7 +98,7 @@ services:
     ports:
       - "3001:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin123}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:?Grafana password not set}
     volumes:
       - grafana_data:/var/lib/grafana
     restart: unless-stopped

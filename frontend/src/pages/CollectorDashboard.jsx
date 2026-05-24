@@ -1,6 +1,6 @@
 // frontend/src/pages/CollectorDashboard.jsx
 import React, { useState, useEffect, useCallback } from 'react';
-import { getMySchedule, getReadyColonies, schedulePickup, getCollectorProfile } from '../services/collector';
+import { getMySchedule, getReadyColonies, schedulePickup, getCollectorProfile, getRecentActivities } from '../services/collector';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import BookingModal from '../components/collector/BookingModal';
@@ -8,7 +8,7 @@ import CollectorProfile from '../components/collector/CollectorProfile';
 import CollectionPointsModal from '../components/collector/CollectionPointsModal';
 import CollectionCompletionModal from '../components/collector/CollectionCompletionModal';
 import CollectorStatsWidget from '../components/dashboard/CollectorStatsWidget';
-import { Calendar, PackageSearch, MapPin, Settings, Navigation, CheckCircle } from 'lucide-react';
+import { Calendar, PackageSearch, MapPin, Settings, Navigation, CheckCircle, Clock } from 'lucide-react';
 import { formatDate } from '../utils/helpers';
 
 const CollectorDashboard = () => {
@@ -16,6 +16,7 @@ const CollectorDashboard = () => {
   const [schedule, setSchedule] = useState([]);
   const [readyColonies, setReadyColonies] = useState([]);
   const [collector, setCollector] = useState(null);
+  const [recentActivities, setRecentActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,14 +33,16 @@ const CollectorDashboard = () => {
     }
     setError(null);
     try {
-      const [scheduleData, readyColoniesData, profileData] = await Promise.all([
+      const [scheduleData, readyColoniesData, profileData, activitiesData] = await Promise.all([
         getMySchedule(),
         getReadyColonies(),
-        getCollectorProfile()
+        getCollectorProfile(),
+        getRecentActivities()
       ]);
       setSchedule(scheduleData.bookings || []);
       setReadyColonies(readyColoniesData.colonies || []);
       setCollector(profileData.collector || null);
+      setRecentActivities(activitiesData.activities || []);
     } catch (err) {
       console.error('Dashboard data error:', err);
       setError('Failed to load dashboard data. Please try again.');
@@ -196,6 +199,27 @@ const CollectorDashboard = () => {
             </div>
           </div>
         </div>
+
+        {/* Recent Activities Section */}
+        <div className="mt-8 bg-white p-6 rounded-lg shadow-md">
+          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <Clock className="text-emerald-600" /> Recent Activities
+          </h2>
+          <div className="space-y-4">
+            {recentActivities.length > 0 ? recentActivities.map(activity => (
+              <div key={activity.id} className="p-4 border border-gray-100 rounded-md bg-gray-50 flex justify-between items-center">
+                <div>
+                  <p className="font-semibold text-gray-800">{activity.description}</p>
+                  <p className="text-sm text-gray-500">{formatDate(activity.date)}</p>
+                </div>
+                {activity.points && (
+                  <span className="text-emerald-600 font-bold">+{activity.points} pts</span>
+                )}
+              </div>
+            )) : <p className="text-gray-500">No recent activities found.</p>}
+          </div>
+        </div>
+
       </div>
       <BookingModal
         colony={selectedColony}

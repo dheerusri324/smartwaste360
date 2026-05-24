@@ -293,9 +293,11 @@ bool sendToServer(float fill_percentage, float weight_kg, float distance_cm) {
   for (int attempt = 1; attempt <= WIFI_MAX_RETRIES; attempt++) {
     HTTPClient http;
     
+    WiFiClientSecure *client = nullptr;
+
     if (isHTTPS) {
       // HTTPS: use WiFiClientSecure (skip cert check — fine for demo)
-      WiFiClientSecure *client = new WiFiClientSecure;
+      client = new WiFiClientSecure;
       client->setInsecure();  // Skip SSL certificate verification
       http.begin(*client, SERVER_URL);
     } else {
@@ -306,18 +308,11 @@ bool sendToServer(float fill_percentage, float weight_kg, float distance_cm) {
     http.addHeader("X-IoT-API-Key", IOT_API_KEY);
     http.setTimeout(10000);  // 10 second timeout
     
-    // Build JSON
-    String payload = "{";
-    payload += "\"device_id\":\"" + String(DEVICE_ID) + "\",";
-    payload += "\"point_name\":\"" + String(POINT_NAME) + "\",";
-    payload += "\"colony_id\":" + String(COLONY_ID) + ",";
-    payload += "\"waste_type\":\"" + String(WASTE_TYPE) + "\",";
-    payload += "\"fill_percentage\":" + String(fill_percentage, 1) + ",";
-    payload += "\"estimated_weight_kg\":" + String(weight_kg, 2) + ",";
-    payload += "\"distance_cm\":" + String(distance_cm, 1) + ",";
-    payload += "\"bin_height_cm\":" + String(BIN_HEIGHT_CM, 1) + ",";
-    payload += "\"battery_level\":100";
-    payload += "}";
+    // Build JSON using snprintf to avoid String heap fragmentation
+    char payload[256];
+    snprintf(payload, sizeof(payload), 
+             "{\"device_id\":\"%s\",\"point_name\":\"%s\",\"colony_id\":%d,\"waste_type\":\"%s\",\"fill_percentage\":%.1f,\"estimated_weight_kg\":%.2f,\"distance_cm\":%.1f,\"bin_height_cm\":%.1f,\"battery_level\":100}",
+             DEVICE_ID, POINT_NAME, COLONY_ID, WASTE_TYPE, fill_percentage, weight_kg, distance_cm, BIN_HEIGHT_CM);
     
     if (attempt == 1) {
       Serial.printf("  POST → %s\n", SERVER_URL);
@@ -329,6 +324,7 @@ bool sendToServer(float fill_percentage, float weight_kg, float distance_cm) {
       String response = http.getString();
       Serial.printf("  [OK] Server 200: %s\n", response.c_str());
       http.end();
+      if (client) { delete client; }
       successfulSends++;
       return true;
     }
@@ -341,6 +337,7 @@ bool sendToServer(float fill_percentage, float weight_kg, float distance_cm) {
     }
     
     http.end();
+    if (client) { delete client; }
     
     if (attempt < WIFI_MAX_RETRIES) {
       delay(WIFI_RETRY_DELAY_MS);

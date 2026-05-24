@@ -3,6 +3,7 @@
 from config.database import get_db
 import bcrypt
 from psycopg2.extras import RealDictCursor
+import logging
 
 class Collector:
     @staticmethod
@@ -120,7 +121,7 @@ class Collector:
         # For now, location is stored in memory/session only since table doesn't have these columns
         # This prevents errors but doesn't persist location data
         # TODO: Add location columns to collectors table if needed
-        print(f"[INFO] Collector {collector_id} location updated (not persisted): lat={latitude}, lng={longitude}")
+        logging.info(f"Collector {collector_id} location updated (not persisted): lat={latitude}, lng={longitude}")
         return True
 
     @staticmethod

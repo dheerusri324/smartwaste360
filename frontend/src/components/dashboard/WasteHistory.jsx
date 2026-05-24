@@ -7,6 +7,7 @@ import { formatDate } from '../../utils/helpers';
 const WasteHistory = () => {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -14,8 +15,10 @@ const WasteHistory = () => {
         // Fetch only the 5 most recent items for the dashboard
         const response = await getWasteHistory(1, 5);
         setHistory(response.logs || []);
-      } catch (error) {
+        setError(null);
+      } catch (err) {
         console.error("Error fetching history");
+        setError("Failed to load recent activity.");
       } finally {
         setLoading(false);
       }
@@ -25,6 +28,10 @@ const WasteHistory = () => {
 
   if (loading) {
     return <div className="bg-white p-6 rounded-lg shadow-md h-96 animate-pulse"></div>;
+  }
+
+  if (error) {
+    return <div className="bg-white p-6 rounded-lg shadow-md h-96 flex items-center justify-center text-red-500 bg-red-50">{error}</div>;
   }
 
   return (

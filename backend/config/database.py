@@ -64,6 +64,10 @@ def get_db():
     try:
         connection = connection_pool.getconn()
         yield connection
+    except Exception:
+        if connection:
+            connection.rollback()
+        raise
     finally:
         if connection:
             connection_pool.putconn(connection)

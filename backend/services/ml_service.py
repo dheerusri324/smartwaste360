@@ -5,8 +5,15 @@ import google.generativeai as genai
 from PIL import Image
 from pathlib import Path
 from dotenv import load_dotenv
+import logging
 
 class MLService:
+    CLASS_LABELS = ['organic', 'paper', 'plastic', 'metal', 'glass', 'cardboard']
+    RECYCLABLE_MAP = {
+        'paper': True, 'plastic': True, 'metal': True, 'glass': True, 'cardboard': True,
+        'organic': False
+    }
+
     def __init__(self):
         """
         Initializes the ML Service by configuring the Gemini API.
@@ -17,7 +24,7 @@ class MLService:
 
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            print("WARNING: GEMINI_API_KEY not found. ML features will be disabled.")
+            logging.warning("GEMINI_API_KEY not found. ML features will be disabled.")
             self.model = None
             return
         
@@ -26,15 +33,9 @@ class MLService:
         # Use the latest available Gemini Flash model
         self.model = genai.GenerativeModel('gemini-2.5-flash')
         
-        self.class_labels = ['organic', 'paper', 'plastic', 'metal', 'glass', 'cardboard']
-        self.recyclable_map = {
-            'paper': True, 'plastic': True, 'metal': True, 'glass': True, 'cardboard': True,
-            'organic': False
-        }
-        
         # --- THIS IS THE FIX ---
         # Replaced the emoji with simple text for Windows compatibility.
-        print("[OK] ML Service initialized with Gemini model: 'gemini-2.5-flash'.")
+        logging.info("ML Service initialized with Gemini model: 'gemini-2.5-flash'.")
 
     def classify_waste(self, image_path, weight, waste_type):
         """
@@ -55,18 +56,18 @@ class MLService:
             img = Image.open(image_path)
             prompt = f"""
             Analyze the image and classify the primary waste item into one of the following categories:
-            {', '.join(self.class_labels)}.
+            {', '.join(self.CLASS_LABELS)}.
             
             Provide your answer as a single word in lowercase from the list above. For example: plastic
             """
             response = self.model.generate_content([prompt, img])
             predicted_category = response.text.strip().lower()
 
-            if predicted_category not in self.class_labels:
-                print(f"Warning: Gemini returned an unexpected category: '{predicted_category}', defaulting to 'plastic'")
+            if predicted_category not in self.CLASS_LABELS:
+                logging.warning(f"Gemini returned an unexpected category: '{predicted_category}', defaulting to 'plastic'")
                 predicted_category = 'plastic' 
 
-            is_recyclable = self.recyclable_map.get(predicted_category, False)
+            is_recyclable = self.RECYCLABLE_MAP.get(predicted_category, False)
 
             # Map predicted_category to waste_type (wet/dry classification)
             # Organic waste is 'wet', everything else is 'dry'
@@ -80,10 +81,7 @@ class MLService:
                 'impact': { 'co2_saved_kg': 0.0 }
             }
         except Exception as e:
-            print(f"ERROR during Gemini API call: {e}")
-            print("Falling back to default classification...")
-            import traceback
-            traceback.print_exc()
+            logging.exception(f"ERROR during Gemini API call: {e}. Falling back to default classification...")
             
             # Fallback to a default classification
             # Use 'dry' as default since most waste is dry
