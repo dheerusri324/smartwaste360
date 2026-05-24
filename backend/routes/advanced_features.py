@@ -96,6 +96,104 @@ def get_user_achievements(user_id):
             })
         return jsonify({'achievements': fallback, 'progress': {}}), 200
 
+@bp.route('/achievements/backfill', methods=['GET', 'POST'])
+def backfill_achievements():
+    """One-time backfill: compute user_statistics from waste_logs and award achievements"""
+    try:
+        from config.database import get_db
+        from psycopg2.extras import RealDictCursor
+        
+        results = {'users_processed': 0, 'achievements_awarded': [], 'errors': []}
+        
+        with get_db() as db:
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                # Compute stats from waste_logs for ALL users
+                cursor.execute("""
+                    SELECT 
+                        user_id,
+                        COUNT(*) as waste_classifications,
+                        COUNT(*) FILTER (WHERE LOWER(predicted_category) = 'plastic') as plastic_classifications,
+                        COUNT(*) FILTER (WHERE LOWER(predicted_category) = 'paper') as paper_classifications,
+                        COUNT(*) FILTER (WHERE LOWER(predicted_category) = 'metal') as metal_classifications,
+                        COUNT(*) FILTER (WHERE LOWER(predicted_category) = 'glass') as glass_classifications,
+                        COUNT(*) FILTER (WHERE LOWER(predicted_category) = 'organic') as organic_classifications,
+                        COUNT(*) FILTER (WHERE LOWER(predicted_category) = 'textile') as textile_classifications,
+                        COALESCE(SUM(weight_kg), 0) as total_weight_kg,
+                        MAX(created_at::date) as last_classification_date
+                    FROM waste_logs
+                    GROUP BY user_id
+                """)
+                user_stats = cursor.fetchall()
+                
+                for stats in user_stats:
+                    uid = stats['user_id']
+                    try:
+                        # UPSERT into user_statistics
+                        cursor.execute("""
+                            INSERT INTO user_statistics (
+                                user_id, waste_classifications, plastic_classifications,
+                                paper_classifications, metal_classifications, glass_classifications,
+                                organic_classifications, textile_classifications,
+                                total_weight_kg, last_classification_date, consecutive_days,
+                                colony_collections_triggered, updated_at
+                            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 1, 0, CURRENT_TIMESTAMP)
+                            ON CONFLICT (user_id) DO UPDATE SET
+                                waste_classifications = EXCLUDED.waste_classifications,
+                                plastic_classifications = EXCLUDED.plastic_classifications,
+                                paper_classifications = EXCLUDED.paper_classifications,
+                                metal_classifications = EXCLUDED.metal_classifications,
+                                glass_classifications = EXCLUDED.glass_classifications,
+                                organic_classifications = EXCLUDED.organic_classifications,
+                                textile_classifications = EXCLUDED.textile_classifications,
+                                total_weight_kg = EXCLUDED.total_weight_kg,
+                                last_classification_date = EXCLUDED.last_classification_date,
+                                updated_at = CURRENT_TIMESTAMP
+                        """, (
+                            uid,
+                            stats['waste_classifications'],
+                            stats['plastic_classifications'],
+                            stats['paper_classifications'],
+                            stats['metal_classifications'],
+                            stats['glass_classifications'],
+                            stats['organic_classifications'],
+                            stats['textile_classifications'],
+                            stats['total_weight_kg'],
+                            stats['last_classification_date']
+                        ))
+                        results['users_processed'] += 1
+                    except Exception as user_err:
+                        results['errors'].append(f"User {uid}: {str(user_err)}")
+                
+                db.commit()
+        
+        # Now run achievement checks for all processed users
+        with get_db() as db:
+            with db.cursor(cursor_factory=RealDictCursor) as cursor:
+                cursor.execute("SELECT user_id FROM user_statistics")
+                all_users = cursor.fetchall()
+        
+        for u in all_users:
+            try:
+                new_achs = Achievement.check_and_award_achievements(u['user_id'])
+                if new_achs:
+                    for ach in new_achs:
+                        results['achievements_awarded'].append({
+                            'user_id': u['user_id'],
+                            'achievement': ach['name'],
+                            'points': ach['points']
+                        })
+            except Exception as ach_err:
+                results['errors'].append(f"Achievement check for user {u['user_id']}: {str(ach_err)}")
+        
+        return jsonify({
+            'message': 'Backfill completed!',
+            'results': results
+        }), 200
+        
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({'error': f'Backfill failed: {str(e)}'}), 500
+
 @bp.route('/achievements/check/<int:user_id>', methods=['POST'])
 @jwt_required()
 def check_achievements(user_id):
