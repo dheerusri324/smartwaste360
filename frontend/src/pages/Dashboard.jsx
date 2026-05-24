@@ -14,13 +14,16 @@ const Dashboard = () => {
   const [loadingAchievements, setLoadingAchievements] = React.useState(true);
 
   React.useEffect(() => {
-    if (user?.id) {
-      getUserAchievements(user.id)
+    const userId = user?.id || user?.user_id || user?.admin_id;
+    if (userId) {
+      getUserAchievements(userId)
         .then(data => setAchievements(data.achievements || []))
         .catch(err => console.error('Failed to load achievements:', err))
         .finally(() => setLoadingAchievements(false));
+    } else {
+      setLoadingAchievements(false);
     }
-  }, [user?.id]);
+  }, [user]);
 
   return (
     <div className="space-y-8">

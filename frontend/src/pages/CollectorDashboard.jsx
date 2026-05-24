@@ -209,11 +209,20 @@ const CollectorDashboard = () => {
             {recentActivities.length > 0 ? recentActivities.map(activity => (
               <div key={activity.id} className="p-4 border border-gray-100 rounded-md bg-gray-50 flex justify-between items-center">
                 <div>
-                  <p className="font-semibold text-gray-800">{activity.description}</p>
-                  <p className="text-sm text-gray-500">{formatDate(activity.date)}</p>
+                  <p className="font-semibold text-gray-800">
+                    {activity.colony_name}
+                    <span className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
+                      activity.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      activity.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {activity.status}
+                    </span>
+                  </p>
+                  <p className="text-sm text-gray-500">{formatDate(activity.completed_at || activity.pickup_time)}</p>
                 </div>
-                {activity.points && (
-                  <span className="text-emerald-600 font-bold">+{activity.points} pts</span>
+                {activity.weight_collected > 0 && (
+                  <span className="text-emerald-600 font-bold">{activity.weight_collected} kg</span>
                 )}
               </div>
             )) : <p className="text-gray-500">No recent activities found.</p>}
